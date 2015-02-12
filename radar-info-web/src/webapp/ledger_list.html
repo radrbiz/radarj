@@ -1,0 +1,102 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="//cnwiki.radarlab.org/lib/tpl/dokuwiki/images/favicon.ico" />
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./static/jquery-ui.css"/>
+    <!--<link href="./static/s.css" type="text/css" rel="stylesheet"/>-->
+    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="./static/c.js" type="text/javascript"></script>
+    <title>$platform Client Page</title>
+    <style>
+        table{
+            font-size: 11px;
+        }
+        td {
+            word-break:break-all;
+        }
+    </style>
+    <script lang="javascript">
+        $(function () {
+            var time = 5000;
+            function run() {
+                setInterval(ledger, time);
+            }
+            ledger();
+            run();
+        });
+        function ledger() {
+            $.ajax({
+                type: "POST",
+                url: "./",
+                data: "type=ledger"
+            }).done(function (data) {
+                var html = "<div class=\"panel-heading\"></div>";
+                if (typeof data.message != 'undefined') {
+                    html += "<span style=\"color:red\">"+data.message + "</span>"
+                }else{
+                    html += "<table class='table table-hover table-condensed'>"
+                    html += "<tr><th>ledger_index</th><th>close_time</th>" +
+                            "<th>VRP</th><th>VBC</th><th>Hash</th></tr>";
+                    for (var index in data) {
+                        if (data[index].transaction_hash != '0000000000000000000000000000000000000000000000000000000000000000')
+                            html +="<tr class='success'>";
+                        else
+                            html +="<tr>";
+                        html += "<td><a target='_blank' href=\"./ledger/" + data[index].ledger_index + "\">" + data[index].ledger_index + "</a>"
+                                + "</td><td>" + data[index].close_time_human
+                                + "</td><td>" + fmoney(data[index].total_coins/1000000,6)
+                                + "</td><td>" + fmoney(data[index].total_coinsVBC/1000000,6)
+                        html += "</td><td>" + data[index].ledger_hash
+                                + "</td></tr>";
+                    }
+                    html += "</table>";
+                }
+                $("#ledger_info").html(html);
+            });
+        }
+        function fmoney(s, n) {
+            n = n > 0 && n <= 20 ? n : 2;
+            s = parseFloat((s + "").replace(/[^\d\.-]/g, "")).toFixed(n) + "";
+            var l = s.split(".")[0].split("").reverse(), r = s.split(".")[1];
+            var t = "";
+            for (var i = 0; i < l.length; i++) {
+                t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
+            }
+            return t.split("").reverse().join("") + "." + r;
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">$platform</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="./index.html">Search</a></li>
+                <li class="active"><a href="./ledger_list.html">Ledger List</a></li>
+                <li><a href="./server.html">Server Info</a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<div class="container">
+    <div class="jumbotron">
+        <h3>Recent 50 Ledgers</h3>
+        <div class="panel panel-default" id="ledger_info"></div>
+    </div>
+</div>
+</body>
+</html>

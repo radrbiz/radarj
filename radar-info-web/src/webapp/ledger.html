@@ -1,0 +1,239 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="//cnwiki.radarlab.org/lib/tpl/dokuwiki/images/favicon.ico" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link href="../static/s.css" type="text/css" rel="stylesheet"/>
+    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+    <script src="../static/CommonPerson.js" type="text/javascript"></script>
+    <script src="../static/c.js" type="text/javascript"></script>
+    <style>
+        table{
+            font-size: 12px;
+        }
+        th{
+            font-size: 12px;
+        }
+        td {
+            word-break:break-all;
+        }
+        /**{padding:0px;margin:0px;}*/
+        /*p{font-size:18px;font-weight:bold;}*/
+        /*全屏背景遮罩层*/
+        .loadingPage_bg1 {
+            background: none repeat scroll 0 0 #000;
+            height: 100%;
+            left: 0; /*:rgba(0,0,0,0.5);*/
+            opacity: 0.7;
+            filter: alpha(opacity=70);
+            width: 100%;
+            position: absolute;
+            top: 0px;
+            z-index: 110;
+        }
+
+        /*局部背景遮罩*/
+        .loadingPage_bg {
+            background: none repeat scroll 0 0 #fff;
+            height: 100%;
+            left: 0; /*:rgba(0,0,0,0.5);*/
+            opacity: 1;
+            filter: alpha(opacity=100);
+            width: 100%;
+            z-index: 110;
+        }
+
+        #loadingPage {
+            display: block;
+            font-weight: bold;
+            font-size: 12px;
+            color: #595959;
+            /*height: 28px;*/
+            left: 50%;
+            /*line-height: 27px;*/
+            margin-left: -74px;
+            margin-top: -14px;
+            padding: 10px 10px 10px 50px;
+            position: absolute;
+            text-align: left;
+            top: 50%;
+            /*width: 148px;*/
+            z-index: 111;
+            background: url(../static/loading.gif) no-repeat scroll 12px center #FFFFFF;
+            border: 2px solid #86A5AD;
+        }
+    </style>
+    <script>
+        $(function () {
+            $("#path").dialog({
+                autoOpen: false,
+                width: 800,
+                height: 600,
+                position: { my: "top", at: "top", of: window }
+            });
+            $("#meta").dialog({
+                autoOpen: false,
+                width: 800,
+                height: 600,
+                position: { my: "top", at: "top", of: window }
+            });
+            CommonPerson.Base.LoadingPic.FullScreenShow();
+
+            open($index);
+        });
+
+        function open(index) {
+            $.ajax({
+                type: "POST",
+                url: "./ledger/",
+                data: "type=ledgerData&index=" + index
+            }).done(function (data) {
+                data = data.result;
+                var states = {};
+                $.each(data.state, function (index, value) {
+                    var propertyName = value.hasOwnProperty("LedgerEntryType") ? value["LedgerEntryType"] : "Unknown";
+                    if (!states.hasOwnProperty(propertyName))
+                        states[propertyName] = [];
+                    states[propertyName].push(value);
+                });
+                var html = "<table class=\"table table-hover table-condensed\">";
+                html += "<tr><th>LedgerIndex</th><td>" + data.ledger_index + "</td></tr>";
+                html += "<tr><th>totalCoins</th><td>" + data.totalCoins + "</td></tr>";
+                html += "<tr><th>totalCoinsVBC</th><td>" + data.totalCoinsVBC + "</td></tr>";
+                html += "<tr><th>Marker</th><td>" + data.marker + "</td></tr>";
+                html += "<tr><th>LedgerHash</th><td>" + data.ledger_hash + "</td></tr>";
+                html += "</table>"
+                html += "<h4>Ledger Entries[" + data.state.length + "]</h4>"
+                html += "&nbsp;<a href=\"javascript:void(0);\" onclick=\"ExpandAllClicked('Canvas')\">ExpandAll</a>&nbsp;<a href=\"javascript:void(0);\" onclick=\"CollapseAllClicked('Canvas')\">CollapseAll</a>";
+                html += "<div id='Canvas'>"
+                $.each(states, function (key, value) {
+                    html += "<h5>"+key + "[" + value.length + "]</h5><div id='Canvas" + key + "'></div>"
+                });
+                html += "</div>"
+                html += "<h4>Transactions["+data.transactions.length+"]</h4>"
+                html += "<table class='bordered'>"
+                html += "<tr><th>Type</th><th>Sender</th><th>Recipient</th><th>Fee</th><th>Currency</th><th>Amount</th><th>Paths</th><th>meta</th><th>Hash</th></tr>"
+                for (var index in data.transactions) {
+                    tx = data.transactions[index];
+                    html += "<tr><td>" + tx.TransactionType
+                            + "</td><td>" + tx.Account;
+                    if (typeof tx.Destination != 'undefined')
+                        html += "</td><td>" + tx.Destination;
+                    else
+                        html += "</td><td>NA";
+                    html += "</td><td>" + tx.Fee + "</td>";
+                    if (tx.TransactionType == "Payment") {
+                        if (typeof tx.Amount.currency == 'undefined') {
+                            html += "</td><td>XRP</td><td>" + tx.Amount + "</td>"
+                        } else
+                            html += "</td><td>" + tx.Amount.currency + "</td><td>" + tx.Amount.value + "</td>"
+                    } else if (tx.TransactionType == "OfferCreate") {
+                        var pcur;
+                        var pamount;
+                        var gcur;
+                        var gamount;
+                        if (typeof tx.TakerPays.currency == 'undefined') {
+                            pcur = "XRP";
+                            pamount = tx.TakerPays;
+                        } else {
+                            pcur = tx.TakerPays.currency;
+                            pamount = tx.TakerPays.value;
+                        }
+                        if (typeof tx.TakerGets.currency == 'undefined') {
+                            gcur = "XRP";
+                            gamount = tx.TakerGets;
+                        } else {
+                            gcur = tx.TakerGets.currency;
+                            gamount = tx.TakerGets.value;
+                        }
+                        html += "</td><td>" + pcur + "<->" + gcur + "</td><td>" + pamount + "<->" + gamount + "</td>"
+                    } else if (tx.TransactionType == 'Dividend') {
+                        html += "</td><td>VBC</td><td>" + parseInt(tx.DividendCoinsVBC, 16) / 1000000 + "</td>"
+                    } else {
+                        html += "</td><td>NA</td><td>NA</td>"
+                    }
+                    if (typeof tx.Paths != 'undefined') {
+                        var json = JSON.stringify(tx.Paths);
+                        html += "</td><td><div style='display:none' id='path" + tx.hash + "'>" + json + "</div>" +
+                                "<input type='button' value='viewPaths' onclick=\"showPath('" + tx.hash + "')\"/></td>";
+                    } else {
+                        html += "</td><td>--</td>";
+                    }
+                    if (typeof tx.metaData != 'undefined') {
+                        var json = JSON.stringify(tx.metaData);
+                        html += "</td><td><div style='display:none' id='meta" + tx.hash + "'>" + json + "</div>" +
+                                "<input type='button' value='viewMeta' onclick=\"viewMeta('" + tx.hash + "')\"/></td>";
+                    } else {
+                        html += "</td><td>--</td>";
+                    }
+                    html += "<td>" + tx.hash + "</td></tr>";
+                }
+                html += "</table>"
+                $("#ledger").html(html);
+                $.each(states, function (key, value) {
+                    Process(JSON.stringify(value), "Canvas" + key);
+                });
+                setTimeout(hide, 100);
+            });
+        }
+        function hide() {
+            CommonPerson.Base.LoadingPic.FullScreenHide();
+        }
+        function showPath(hash) {
+            Process($("#path" + hash).html(), "path");
+            ExpandAllClicked("path");
+            $("#path").dialog("open");
+        }
+        function viewMeta(hash) {
+            Process($("#meta" + hash).html(), "meta");
+            ExpandAllClicked("meta");
+            $("#meta").dialog("open");
+        }
+        function hexToString(str) {
+            alert(str)
+            var val = "";
+            var arr = str.split(",");
+            for (var i = 0; i < arr.length; i++) {
+                val += arr[i].fromCharCode(i);
+            }
+            return val;
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">$platform</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="../index.html">Search</a></li>
+                <li><a href="../ledger_list.html">Ledger List</a></li>
+                <li><a href="../server.html">Server Info</a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<div class="container">
+    <div class="jumbotron">
+        <h3>Ledger Info</h3>
+        <div id="ledger" title="LedgerInfo"></div>
+        <div id="path" title="Transaction Paths"></div>
+        <div id="meta" title="Transaction MetaData"></div>
+    </div>
+</div>
+</body>
+</html>
