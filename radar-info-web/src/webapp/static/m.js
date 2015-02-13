@@ -1,4 +1,4 @@
-_uacct = "UA-2223138-1";
+_uacct = "UA-59572162-1"; //for google-analytics
 urchinTracker();
 function onLoad() {
     var version = getSilverlightVersion();

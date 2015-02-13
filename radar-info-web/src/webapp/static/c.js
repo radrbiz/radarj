@@ -22,7 +22,7 @@ function Process(json, eid) {
         $id(eid).innerHTML = "<PRE class='CodeContainer'>" + html + "</PRE>";
         CollapseAllClicked(eid);
     } catch (e) {
-        alert("JSON数据格式不正确:\n" + e.message);
+        alert("JSON format error:\n" + e.message);
         $id(eid).innerHTML = "";
     }
 }
