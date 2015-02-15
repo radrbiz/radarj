@@ -1,6 +1,7 @@
 package org.radarlab.api;
 
 import com.google.gson.Gson;
+
 import org.radarlab.client.ws.RadarWebSocketClient;
 import org.radarlab.core.*;
 import org.radarlab.core.fields.Field;
@@ -78,7 +79,6 @@ public class TransactionImpl {
         }
         List<JSONObject> bids = new ArrayList<>();
         List<JSONObject> asks = new ArrayList<>();
-
         Map<String, Object> mapTakerGets = new HashMap<>();
         mapTakerGets.put("currency", currency1);
         if (issuer1 != null) {
@@ -99,7 +99,7 @@ public class TransactionImpl {
             if (json.getString("status").equalsIgnoreCase("success")) {
                 JSONObject jsonResult = json.getJSONObject("result");
                 JSONArray jsonArray = jsonResult.getJSONArray("offers");
-                asks = formatOfferArray(jsonArray, currency1, 0, limit);
+                asks = formatOfferArray(jsonArray, currency1, currency2, 0, limit);
                 ;
             }
         }
@@ -114,7 +114,7 @@ public class TransactionImpl {
             if (json.getString("status").equalsIgnoreCase("success")) {
                 JSONObject jsonResult = json.getJSONObject("result");
                 JSONArray jsonArray = jsonResult.getJSONArray("offers");
-                bids = formatOfferArray(jsonArray, currency1, 1, limit);
+                bids = formatOfferArray(jsonArray, currency1, currency2, 1, limit);
             }
         }
 
@@ -161,7 +161,6 @@ public class TransactionImpl {
         if (marker != null) {
             data.put("marker", marker);
         }
-
         String postData = new Gson().toJson(data);
         String jsonResult = RadarWebSocketClient.req(postData);
         JSONObject jsonObject = new JSONObject(jsonResult);
@@ -181,7 +180,6 @@ public class TransactionImpl {
         }
     }
 
-
     public String offerCancel(String seed, int offerSequence, int sequence) throws APIException {
         IKeyPair kp = Seed.getKeyPair(seed);
         OfferCancel offerCancel = new OfferCancel();
@@ -193,7 +191,6 @@ public class TransactionImpl {
         String json = makeTx(sign.tx_blob);
         return json;
     }
-
 
     public String makePaymentTransaction(String seed, String recipient, Amount amount, int sequence, boolean isResolved, JSONArray paths, Amount sendMax) throws APIException {
         IKeyPair kp = Seed.getKeyPair(seed);
@@ -263,7 +260,7 @@ public class TransactionImpl {
         data.put("tx_blob", tx_blob);
         String postData = new Gson().toJson(data);
         String json = RadarWebSocketClient.req(postData);
-        logger.debug("makeTx() ret: " + json);
+        logger.info("make tx result: " + json);
         return json;
     }
 
@@ -274,6 +271,8 @@ public class TransactionImpl {
         for (AffectedNode node : meta.affectedNodes()) {
             switch (type) {
                 case "failed":
+                case "unknown":
+                case "account_set":
                     if (node.isModifiedNode()) {
                         STObject obj = (STObject) node.get(Field.ModifiedNode);
                         STObject ff = (STObject) obj.get(Field.FinalFields);
@@ -292,11 +291,12 @@ public class TransactionImpl {
                         STObject ff = (STObject) obj.get(Field.FinalFields);
                         if (ff != null) {
                             Amount highLimit = (Amount) ff.get(Field.HighLimit);
-                            Amount lowimit = (Amount) ff.get(Field.LowLimit);
+                            Amount lowLimit = (Amount) ff.get(Field.LowLimit);
                             Amount balance = (Amount) ff.get(Field.Balance);
                             STObject preFields = (STObject) obj.get(Field.PreviousFields);
-                            if (highLimit != null && lowimit != null) {
-                                if (lowimit.issuerString().equals(address)) {
+                            if (highLimit != null && lowLimit != null) {
+
+                                if (lowLimit.issuerString().equals(address)) {
                                     Effect effect = new Effect();
                                     if (preFields != null) {
                                         Amount preBalance = (Amount) preFields.get(Field.Balance);
@@ -309,6 +309,20 @@ public class TransactionImpl {
                                     }
                                     effect.setType("amount");
                                     effect.setBalance(new AmountObj(-balance.doubleValue(), balance.currencyString(), balance.issuerString()));
+                                    effects.add(effect);
+                                }else{
+                                    Effect effect = new Effect();
+                                    if (preFields != null) {
+                                        Amount preBalance = (Amount) preFields.get(Field.Balance);
+                                        if (preBalance != null) {
+                                            effect.setAmount(new AmountObj(-(preBalance.doubleValue() - balance.doubleValue()), balance.currencyString(), lowLimit.issuerString()));
+                                        }
+                                    }
+                                    if (effect.getAmount() == null) {
+                                        effect.setAmount(item.getAmount());
+                                    }
+                                    effect.setType("amount");
+                                    effect.setBalance(new AmountObj(balance.doubleValue(), balance.currencyString(), balance.issuerString()));
                                     effects.add(effect);
                                 }
                             }
@@ -342,22 +356,6 @@ public class TransactionImpl {
                                                 }
                                             }
                                         }
-                                        if (haveBalanceEffect) {
-                                            Effect effect = new Effect();
-                                            if (item.getAmount().getCurrency().equals("VBC")) {
-                                                balance = (Amount) ff.get(Field.BalanceVBC);
-                                            }
-                                            if (item.getAmount().getCurrency().equals("VRP")) {
-                                                effect.setBalance(new AmountObj(balance.doubleValue(), "VRP", null));
-                                            } else {
-                                                effect.setBalance(new AmountObj(balanceVBC.doubleValue(), "VBC", null));
-                                            }
-                                            effect.setType("amount");
-                                            AmountObj amount = item.getAmount();
-                                            effect.setAmount(new AmountObj(item.getType().equals("sent") ? -amount.getAmount() : amount.getAmount()
-                                                    , amount.getCurrency(), amount.getIssuer()));
-                                            effects.add(effect);
-                                        }
                                         //if tx payment currency is payment, and is tx type is sent, then add a fee effect
                                         if ("sent".equals(item.getType())) {
 
@@ -383,6 +381,23 @@ public class TransactionImpl {
                                             feeEffect.setAmount(new AmountObj(-item.getFee().getAmount(), "VRP", null));
                                             effects.add(feeEffect);
                                         }
+                                        if (haveBalanceEffect) {
+                                            Effect effect = new Effect();
+                                            if (item.getAmount().getCurrency().equals("VBC")) {
+                                                balance = (Amount) ff.get(Field.BalanceVBC);
+                                            }
+                                            if (item.getAmount().getCurrency().equals("VRP")) {
+                                                effect.setBalance(new AmountObj(balance.doubleValue(), "VRP", null));
+                                            } else {
+                                                effect.setBalance(new AmountObj(balanceVBC.doubleValue(), "VBC", null));
+                                            }
+                                            effect.setType("amount");
+                                            AmountObj amount = item.getAmount();
+                                            effect.setAmount(new AmountObj(item.getType().equals("sent") ? -amount.getAmount() : amount.getAmount()
+                                                    , amount.getCurrency(), amount.getIssuer()));
+                                            effects.add(effect);
+                                        }
+
 
                                     } else {
                                         Effect feeEffect = new Effect();
@@ -399,40 +414,28 @@ public class TransactionImpl {
                                 if (highLimit != null && lowLimit != null) {
                                     //balance change abount current account
                                     //highlimit stands for recipient
+                                    String issuer = lowLimit.issuerString();
+                                    if(highLimit.value().intValue() == 0){
+                                        issuer = highLimit.issuerString();
+                                    }
                                     if (highLimit.issuerString().equals(address)) {
                                         Effect effect = new Effect();
-                                        if (item.getAmount().getCurrency().equals(highLimit.currencyString())) {
-                                            effect.setAmount(item.getAmount());
-                                            effect.setBalance(new AmountObj(Math.abs(balance.doubleValue()), balance.currencyString(), balance.issuerString()));
+                                        Amount preBalance = (Amount) prevFields.get(Field.Balance);
+                                        if(preBalance != null) {
+                                            effect.setAmount(new AmountObj(preBalance.subtract(balance).doubleValue(), preBalance.currencyString(), issuer));
+                                            effect.setBalance(new AmountObj(Math.abs(balance.doubleValue()), balance.currencyString(), issuer));
                                             effect.setType("amount");
                                             effects.add(effect);
-                                        } else {
-                                            //paths tx
-                                            Amount preBalance = (Amount) prevFields.get(Field.Balance);
-                                            if (preBalance != null) {
-                                                effect.setAmount(new AmountObj(preBalance.subtract(balance).doubleValue(), preBalance.currencyString(), preBalance.issuerString()));
-                                                effect.setBalance(new AmountObj(Math.abs(balance.doubleValue()), balance.currencyString(), balance.issuerString()));
-                                                effect.setType("amount");
-                                                effects.add(effect);
-                                            }
                                         }
                                     } else if (lowLimit.issuerString().equals(address)) {
                                         Effect effect = new Effect();
-                                        if (item.getAmount().getCurrency().equals(highLimit.currencyString())) {
-                                            AmountObj effectAmount = item.getAmount();
-                                            effect.setAmount(new AmountObj(-effectAmount.getAmount(), effectAmount.getCurrency(), effectAmount.getIssuer()));
-                                            effect.setBalance(new AmountObj(Math.abs(balance.doubleValue()), balance.currencyString(), balance.issuerString()));
+                                        //paths tx
+                                        Amount preBalance = (Amount) prevFields.get(Field.Balance);
+                                        if (preBalance != null) {
+                                            effect.setAmount(new AmountObj(-preBalance.subtract(balance).doubleValue(), preBalance.currencyString(), issuer));
+                                            effect.setBalance(new AmountObj(Math.abs(balance.doubleValue()), balance.currencyString(), issuer));
                                             effect.setType("amount");
                                             effects.add(effect);
-                                        } else {
-                                            //paths tx
-                                            Amount preBalance = (Amount) prevFields.get(Field.Balance);
-                                            if (preBalance != null) {
-                                                effect.setAmount(new AmountObj(-preBalance.subtract(balance).doubleValue(), preBalance.currencyString(), preBalance.issuerString()));
-                                                effect.setBalance(new AmountObj(Math.abs(balance.doubleValue()), balance.currencyString(), balance.issuerString()));
-                                                effect.setType("amount");
-                                                effects.add(effect);
-                                            }
                                         }
                                     }
                                 }
@@ -691,12 +694,24 @@ public class TransactionImpl {
                                 Amount highLimit = (Amount) nf.get(Field.HighLimit);
                                 Amount lowLimit = (Amount) nf.get(Field.LowLimit);
                                 Amount balance = (Amount) nf.get(Field.Balance);
-                                if (highLimit != null && highLimit.issuerString().equals(address)) {
-                                    Effect effect = new Effect();
-                                    effect.setType("amount");
-                                    effect.setAmount(new AmountObj(-balance.doubleValue(), balance.currencyString(), lowLimit.issuerString()));
-                                    effect.setBalance(new AmountObj(-balance.doubleValue(), balance.currencyString(), lowLimit.issuerString()));
-                                    effects.add(effect);
+                                if(lowLimit != null && highLimit!=null) {
+                                    String issuer = lowLimit.issuerString();
+                                    if (highLimit.value().intValue() == 0) {
+                                        issuer = highLimit.issuerString();
+                                    }
+                                    if (highLimit.issuerString().equals(address)) {
+                                        Effect effect = new Effect();
+                                        effect.setType("amount");
+                                        effect.setAmount(new AmountObj(-balance.doubleValue(), balance.currencyString(), issuer));
+                                        effect.setBalance(new AmountObj(-balance.doubleValue(), balance.currencyString(), issuer));
+                                        effects.add(effect);
+                                    } else if (lowLimit.issuerString().equals(address)) {
+                                        Effect effect = new Effect();
+                                        effect.setType("amount");
+                                        effect.setAmount(new AmountObj(balance.doubleValue(), balance.currencyString(), issuer));
+                                        effect.setBalance(new AmountObj(balance.doubleValue(), balance.currencyString(), issuer));
+                                        effects.add(effect);
+                                    }
                                 }
                             }
 
@@ -708,16 +723,28 @@ public class TransactionImpl {
                                 Amount highLimit = (Amount) ff.get(Field.HighLimit);
                                 Amount lowLimit = (Amount) ff.get(Field.LowLimit);
                                 Amount preBalance = (Amount) prevFields.get(Field.Balance);
-                                if (highLimit != null && highLimit.issuerString().equals(address) && lowLimit != null) {
+                                if (highLimit != null && lowLimit != null) {
+                                    String issuer = lowLimit.issuerString();
+                                    if(highLimit.value().intValue() == 0){
+                                        issuer = highLimit.issuerString();
+                                    }
                                     //trust line balance change
                                     Amount balance = (Amount) ff.get(Field.Balance);
-                                    if (highLimit != null && highLimit.issuerString().equals(address)) {
+                                    if (highLimit.issuerString().equals(address)) {
                                         Effect effect = new Effect();
                                         effect.setType("amount");
                                         if (preBalance != null) {
-                                            effect.setAmount(new AmountObj(-balance.subtract(preBalance).doubleValue(), balance.currencyString(), lowLimit.issuerString()));
+                                            effect.setAmount(new AmountObj(-balance.subtract(preBalance).doubleValue(), balance.currencyString(), issuer));
                                         }
-                                        effect.setBalance(new AmountObj(-balance.doubleValue(), balance.currencyString(), balance.issuerString()));
+                                        effect.setBalance(new AmountObj(-balance.doubleValue(), balance.currencyString(), issuer));
+                                        effects.add(effect);
+                                    }else if(lowLimit.issuerString().equals(address)){
+                                        Effect effect = new Effect();
+                                        effect.setType("amount");
+                                        if (preBalance != null) {
+                                            effect.setAmount(new AmountObj(balance.subtract(preBalance).doubleValue(), balance.currencyString(), issuer));
+                                        }
+                                        effect.setBalance(new AmountObj(balance.doubleValue(), balance.currencyString(), issuer));
                                         effects.add(effect);
                                     }
                                 }
@@ -737,28 +764,6 @@ public class TransactionImpl {
                                 Effect effect = new Effect();
                                 effect.setType("amount");
                                 if (prevFields != null) {
-                                    if (prevFields.get(Field.BalanceVBC) != null) {
-                                        //vbc offer
-//                                        vbcOffer = true;
-                                        Amount balanceVBC = (Amount) ff.get(Field.BalanceVBC);
-                                        Amount preBalanceVBC = (Amount) prevFields.get(Field.BalanceVBC);
-                                        effect.setAmount(new AmountObj(balanceVBC.subtract(preBalanceVBC).doubleValue(), "VBC", null));
-                                        effect.setBalance(new AmountObj(balanceVBC.doubleValue(), "VBC", null));
-                                        effects.add(effect);
-                                    } else if (prevFields.get(Field.Balance) != null) {
-                                        Amount preBalance = (Amount) prevFields.get(Field.Balance);
-                                        effect.setBalance(new AmountObj(balance.doubleValue(), balance.currencyString(), balance.issuerString()));
-                                        if (item.getSender().equals(address) &&
-                                                balance.currencyString().equals("XRP")) {
-                                            if (preBalance.subtract(balance).doubleValue() > item.getFee().getAmount()) {
-                                                effect.setAmount(new AmountObj(balance.subtract(preBalance).doubleValue() + item.getFee().getAmount(), balance.currencyString(), balance.issuerString()));
-                                                effects.add(effect);
-                                            }
-                                        } else {
-                                            effect.setAmount(new AmountObj(balance.subtract(preBalance).doubleValue(), balance.currencyString(), balance.issuerString()));
-                                            effects.add(effect);
-                                        }
-                                    }
                                     if (item.getSender().equals(address)) {
                                         if (balance.currencyString().equals("XRP")) {
                                             Amount preBalance = (Amount) prevFields.get(Field.Balance);
@@ -777,6 +782,29 @@ public class TransactionImpl {
                                                 effect.setType("fee");
                                                 effects.add(effect);
                                             }
+                                        }
+                                    }
+                                    effect = new Effect();
+                                    if (prevFields.get(Field.BalanceVBC) != null) {
+                                        //vbc offer
+//                                        vbcOffer = true;
+                                        Amount balanceVBC = (Amount) ff.get(Field.BalanceVBC);
+                                        Amount preBalanceVBC = (Amount) prevFields.get(Field.BalanceVBC);
+                                        effect.setAmount(new AmountObj(balanceVBC.subtract(preBalanceVBC).doubleValue(), "VBC", null));
+                                        effect.setBalance(new AmountObj(balanceVBC.doubleValue(), "VBC", null));
+                                        effects.add(effect);
+                                    } else if (prevFields.get(Field.Balance) != null) {
+                                        Amount preBalance = (Amount) prevFields.get(Field.Balance);
+                                        effect.setBalance(new AmountObj(balance.doubleValue(), balance.currencyString(), balance.issuerString()));
+                                        if (item.getSender().equals(address) &&
+                                                balance.currencyString().equals("XRP")) {
+                                            if (Math.abs(preBalance.subtract(balance).doubleValue()) > item.getFee().getAmount()) {
+                                                effect.setAmount(new AmountObj(balance.subtract(preBalance).doubleValue() + item.getFee().getAmount(), balance.currencyString(), balance.issuerString()));
+                                                effects.add(effect);
+                                            }
+                                        } else {
+                                            effect.setAmount(new AmountObj(balance.subtract(preBalance).doubleValue(), balance.currencyString(), balance.issuerString()));
+                                            effects.add(effect);
                                         }
                                     }
                                 }
@@ -939,6 +967,9 @@ public class TransactionImpl {
                 if (tx instanceof OfferCancel) {
                     item.setType("offer_cancelled");
                 }
+                if (tx instanceof AccountSet){
+                    item.setType("account_set");
+                }
                 if (StringUtils.isBlank(item.getType())) {
                     item.setType("unknown");
                 }
@@ -964,11 +995,12 @@ public class TransactionImpl {
 
     /**
      * @param offers
-     * @param currency
+     * @param currency1
+     * @param currency2
      * @param flag     0--asks(sell)  1--bids(buy)
      * @return
      */
-    private List<JSONObject> formatOfferArray(JSONArray offers, String currency, int flag, int limit) {
+    private List<JSONObject> formatOfferArray(JSONArray offers, String currency1, String currency2, int flag, int limit) {
         List<JSONObject> result = new ArrayList<>();
         int len = offers.length();
         BigDecimal showSum = new BigDecimal(0);
@@ -1026,21 +1058,17 @@ public class TransactionImpl {
                 Map<String, BigDecimal> takerValue = getOfferValue(jo);
                 showSum = showSum.add(takerValue.get("takerGets"));
                 BigDecimal showPrice;
-                if (currency.equalsIgnoreCase("VRP") || currency.equalsIgnoreCase("XRP") || currency.equalsIgnoreCase("VBC")) {
+                if (isNative(currency2)) {
+                    showPrice = new BigDecimal(jo.getString("quality")).divide(new BigDecimal(1000000));
+                } else if(isNative(currency1)) {
                     showPrice = new BigDecimal(jo.getString("quality")).multiply(new BigDecimal(1000000));
-                } else {
+                }else{
                     showPrice = new BigDecimal(jo.getString("quality"));
                 }
-
-                String takerPays = jo.get("TakerPays").toString();
-                if (!takerPays.contains("currency")) {
-                    showPrice = showPrice.divide(new BigDecimal(1000000), 6, RoundingMode.HALF_UP);
-                }
-
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("Account", jo.getString("Account"));
-                jsonObject.put("showSum", showSum);
-                jsonObject.put("showPrice", showPrice);
+                jsonObject.put("showSum", showSum.toPlainString());
+                jsonObject.put("showPrice", showPrice.toPlainString());
                 jsonObject.put("showTakerGets", takerValue.get("takerGets"));
 
 
@@ -1065,6 +1093,10 @@ public class TransactionImpl {
             }
         }
         return result;
+    }
+
+    private boolean isNative(String currency){
+        return currency.equalsIgnoreCase("VRP") || currency.equalsIgnoreCase("XRP") || currency.equalsIgnoreCase("VBC");
     }
 
     private Map<String, BigDecimal> getOfferValue(JSONObject jo) {
