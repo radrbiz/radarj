@@ -599,8 +599,13 @@ public class TransactionImpl {
                                         Amount preTakerPays = (Amount) fieldsPrev.get(Field.TakerPays);
                                         Effect effect = new Effect();
                                         effect.setType("offer_filled");
-                                        effect.setTakerGets(new AmountObj(preTakerGets.subtract(takerGets).doubleValue(), takerGets.currencyString(), takerGets.issuerString()));
-                                        effect.setTakerPays(new AmountObj(preTakerPays.subtract(takerPays).doubleValue(), takerPays.currencyString(), takerPays.issuerString()));
+                                        if(address.equals(account.address)) {
+                                            effect.setTakerGets(new AmountObj(preTakerGets.subtract(takerGets).doubleValue(), takerGets.currencyString(), takerGets.issuerString()));
+                                            effect.setTakerPays(new AmountObj(preTakerPays.subtract(takerPays).doubleValue(), takerPays.currencyString(), takerPays.issuerString()));
+                                        }else{
+                                            effect.setTakerGets(new AmountObj(preTakerPays.subtract(takerPays).doubleValue(), takerPays.currencyString(), takerPays.issuerString()));
+                                            effect.setTakerPays(new AmountObj(preTakerGets.subtract(takerGets).doubleValue(), takerGets.currencyString(), takerGets.issuerString()));
+                                        }
                                         showEffects.add(effect);
                                     }
                                 }
