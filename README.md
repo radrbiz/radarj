@@ -6,9 +6,14 @@ This **``radarj``** is the client side implementation to submit transactions, qu
 ##1, radar-lib
   Radar java library for account, transactions, ledger and crypto algorithms.
 
+  For details, the whole development documentation was published in [https://radarlab.org/dev/](https://radarlab.org/dev/) .
+
   Repository contents in src/main/java/ :
 ####    api:
-  implement wrap classes of radard WebSocket API
+  implement wrap classes of radard WebSocket API .
+
+  The WebSocket API interactive document is published in [https://radarlab.org/dev/radar-api-tool.html](https://radarlab.org/dev/radar-api-tool.html) .
+
 ####    btc:
   some functions of Bitcoin, for comparison
 ####    client:
@@ -20,6 +25,8 @@ This **``radarj``** is the client side implementation to submit transactions, qu
 ##2, radar-info-web
 
   Realtime data view pages for Radar System. And it also is an example for using radar-lib .
+
+  The corresponding website built by this module is [https://info.radarlab.org/](https://info.radarlab.org/)
 
 ##3, ripple-bouncycastle
 
