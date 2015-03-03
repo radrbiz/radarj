@@ -66,8 +66,12 @@
                 $("<h3>" + title + "</h3>").insertBefore("#" + elementId);
                 Process(JSON.stringify(data), elementId);
                 $("<a href=\"javascript:void(0);\" onclick=\"ExpandAllClicked('" + elementId + "')\">ExpandAll</a>").insertBefore("#" + elementId);
-                if (data.result.transactions || data.result.ledger.transactions) {
-                    var txHtml = parserTx(data.result.transactions || data.result.ledger.transactions);
+                if (data.result && (data.result.transactions || (data.result.ledger && data.result.ledger.transactions) || data.result.TransactionType)) {
+                    console.log([].concat(data.result))
+                    if(data.result.ledger){
+                        var txHtml = parserTx(data.result.ledger.transactions )
+                    }else
+                        txHtml = parserTx(data.result.transactions || [].concat(data.result));
                     var txDiv = document.createElement("div");
                     txDiv.innerHTML = txHtml;
                     document.getElementById(parentElid).appendChild(txDiv);
@@ -155,10 +159,10 @@
                     html += "</td><td>" + tx.Destination;
                 else
                     html += "</td><td>NA";
-                html += "</td><td>" + tx.Fee + "</td>";
+                html += "</td><td>" + fmoney(tx.Fee/1000000, 6) + " VRP</td>";
                 if (tx.TransactionType == "Payment") {
-                    if (typeof tx.Amount.currency == 'undefined') {
-                        html += "</td><td>XRP</td><td>" + tx.Amount + "</td>"
+                    if (!tx.Amount.currency || tx.Amount.currency == 'VBC') {
+                        html += "</td><td>"+(!tx.Amount.currency?"VRP":"VBC")+"</td><td>" + fmoney(tx.Amount/1000000, 6) + "</td>"
                     } else
                         html += "</td><td>" + tx.Amount.currency + "</td><td>" + tx.Amount.value + "</td>"
                 } else if (tx.TransactionType == "OfferCreate") {
@@ -167,22 +171,23 @@
                     var gcur;
                     var gamount;
                     if (typeof tx.TakerPays.currency == 'undefined') {
-                        pcur = "XRP";
+                        pcur = "VRP";
                         pamount = tx.TakerPays;
                     } else {
                         pcur = tx.TakerPays.currency;
                         pamount = tx.TakerPays.value;
                     }
                     if (typeof tx.TakerGets.currency == 'undefined') {
-                        gcur = "XRP";
+                        gcur = "VRP";
                         gamount = tx.TakerGets;
                     } else {
                         gcur = tx.TakerGets.currency;
                         gamount = tx.TakerGets.value;
                     }
-                    html += "</td><td>" + pcur + "<->" + gcur + "</td><td>" + pamount + "<->" + gamount + "</td>"
+                    html += "</td><td>" + pcur + "-" + gcur + "</td><td>" + ((pcur=='VRP'||pcur=='VBC')?fmoney(pamount/1000000, 6):pamount)
+                            + "-" + ((gcur=='VRP'||gcur=='VBC')?fmoney(gamount/1000000, 6):gamount) + "</td>"
                 } else if (tx.TransactionType == 'Dividend') {
-                    html += "</td><td>VBC</td><td>" + parseInt(tx.DividendCoinsVBC, 16) / 1000000 + "</td>"
+                    html += "</td><td>VBC</td><td>" + fmoney(parseInt(tx.DividendCoinsVBC, 16) / 1000000,6) + "</td>"
                 } else {
                     html += "</td><td>NA</td><td>NA</td>"
                 }
@@ -209,6 +214,22 @@
             Process($("#meta" + hash).html(), "meta");
             ExpandAllClicked("meta");
             $("#meta").dialog("open");
+        }
+        function fmoney(s, n) {
+            var minus = s < 0;
+            if (minus)
+                s = -s;
+            n = n > 0 && n <= 20 ? n : 2;
+            s = parseFloat((s + "").replace(/[^\d\.-]/g, "")).toFixed(n) + "";
+            var l = s.split(".")[0].split("").reverse(), r = s.split(".")[1];
+            var t = "";
+            for (var i = 0; i < l.length; i++) {
+                t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
+            }
+            if (minus)
+                return "-" + t.split("").reverse().join("") + "." + r;
+            else
+                return t.split("").reverse().join("") + "." + r;
         }
     </script>
 </head>
