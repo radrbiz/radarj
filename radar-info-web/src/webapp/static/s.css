@@ -231,3 +231,4 @@ table {
     -webkit-border-radius: 0 0 6px 0;
     border-radius: 0 0 6px 0;
 }
+#txTable tr td:last-child{white-space: auto;word-break: break-all;}
