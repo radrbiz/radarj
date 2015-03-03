@@ -162,7 +162,7 @@
                 html += "</td><td>" + fmoney(tx.Fee/1000000, 6) + " VRP</td>";
                 if (tx.TransactionType == "Payment") {
                     if (!tx.Amount.currency || tx.Amount.currency == 'VBC') {
-                        html += "</td><td>"+(!tx.Amount.currency?"VRP":"VBC")+"</td><td>" + fmoney(tx.Amount/1000000, 6) + "</td>"
+                        html += "</td><td>"+(!tx.Amount.currency?"VRP":"VBC")+"</td><td>" + fmoney(tx.Amount.value/1000000, 6) + "</td>"
                     } else
                         html += "</td><td>" + tx.Amount.currency + "</td><td>" + tx.Amount.value + "</td>"
                 } else if (tx.TransactionType == "OfferCreate") {
@@ -172,14 +172,14 @@
                     var gamount;
                     if (typeof tx.TakerPays.currency == 'undefined') {
                         pcur = "VRP";
-                        pamount = tx.TakerPays;
+                        pamount = tx.TakerPays.value;
                     } else {
                         pcur = tx.TakerPays.currency;
                         pamount = tx.TakerPays.value;
                     }
                     if (typeof tx.TakerGets.currency == 'undefined') {
                         gcur = "VRP";
-                        gamount = tx.TakerGets;
+                        gamount = tx.TakerGets.value;
                     } else {
                         gcur = tx.TakerGets.currency;
                         gamount = tx.TakerGets.value;
