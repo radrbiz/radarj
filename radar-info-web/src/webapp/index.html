@@ -3,14 +3,22 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="shortcut icon" href="//cnwiki.radarlab.org/lib/tpl/dokuwiki/images/favicon.ico" />
     <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="./static/jquery-ui.css"/>
     <link href="./static/s.css" type="text/css" rel="stylesheet"/>
     <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
     <script src="./static/c.js" type="text/javascript"></script>
     <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
     <title>$platform Client Page</title>
     <script lang="javascript">
         $(function () {
+            $("#meta").dialog({
+                autoOpen: false,
+                width: 800,
+                height: 600,
+                position: { my: "top", at: "top", of: window }
+            });
             $sendReq
         });
 
@@ -59,6 +67,14 @@
                 $("<h3>" + title + "</h3>").insertBefore("#" + elementId);
                 Process(JSON.stringify(data), elementId);
                 $("<a href=\"javascript:void(0);\" onclick=\"ExpandAllClicked('" + elementId + "')\">ExpandAll</a>").insertBefore("#" + elementId);
+                if (data.result.transactions || data.result.ledger.transactions) {
+                    var txHtml = parserTx(data.result.transactions || data.result.ledger.transactions);
+                    alert(txHtml);
+                    var txDiv = document.createElement("div");
+                    txDiv.innerHTML = txHtml;
+                    document.getElementById(parentElid).appendChild(txDiv);
+                    $("&nbsp;<a href=\"javascript:void(0);\" onclick=\"$('#txTable').show()\">ShowInTable</a>").insertBefore("#" + elementId);
+                }
                 CollapseAllClicked(elementId);
             });
         }
@@ -128,6 +144,74 @@
                 }
             }
         }
+
+        function parserTx(txs){
+            var html = "<table id='txTable' class='bordered' style='display:none;font-size: 12px'>"
+            html += "<tr><th>Type</th><th>Sender</th><th>Recipient</th><th>Fee</th><th>Currency</th><th>Amount</th><th>Paths</th><th>meta</th><th>Hash</th></tr>"
+            for (var index in txs) {
+                var txBase = txs[index];
+                var tx = txBase.tx?txBase.tx:txBase;
+                html += "<tr><td>" + tx.TransactionType
+                        + "</td><td>" + tx.Account;
+                if (typeof tx.Destination != 'undefined')
+                    html += "</td><td>" + tx.Destination;
+                else
+                    html += "</td><td>NA";
+                html += "</td><td>" + tx.Fee + "</td>";
+                if (tx.TransactionType == "Payment") {
+                    if (typeof tx.Amount.currency == 'undefined') {
+                        html += "</td><td>XRP</td><td>" + tx.Amount + "</td>"
+                    } else
+                        html += "</td><td>" + tx.Amount.currency + "</td><td>" + tx.Amount.value + "</td>"
+                } else if (tx.TransactionType == "OfferCreate") {
+                    var pcur;
+                    var pamount;
+                    var gcur;
+                    var gamount;
+                    if (typeof tx.TakerPays.currency == 'undefined') {
+                        pcur = "XRP";
+                        pamount = tx.TakerPays;
+                    } else {
+                        pcur = tx.TakerPays.currency;
+                        pamount = tx.TakerPays.value;
+                    }
+                    if (typeof tx.TakerGets.currency == 'undefined') {
+                        gcur = "XRP";
+                        gamount = tx.TakerGets;
+                    } else {
+                        gcur = tx.TakerGets.currency;
+                        gamount = tx.TakerGets.value;
+                    }
+                    html += "</td><td>" + pcur + "<->" + gcur + "</td><td>" + pamount + "<->" + gamount + "</td>"
+                } else if (tx.TransactionType == 'Dividend') {
+                    html += "</td><td>VBC</td><td>" + parseInt(tx.DividendCoinsVBC, 16) / 1000000 + "</td>"
+                } else {
+                    html += "</td><td>NA</td><td>NA</td>"
+                }
+                if (typeof tx.Paths != 'undefined') {
+                    var json = JSON.stringify(tx.Paths);
+                    html += "</td><td><div style='display:none' id='path" + tx.hash + "'>" + json + "</div>" +
+                            "<input type='button' value='viewPaths' onclick=\"showPath('" + tx.hash + "')\"/></td>";
+                } else {
+                    html += "</td><td>--</td>";
+                }
+                if ( txBase.metaData || txBase.meta) {
+                    json = JSON.stringify(txBase.metaData || txBase.meta);
+                    html += "</td><td><div style='display:none' id='meta" + tx.hash + "'>" + json + "</div>" +
+                            "<input type='button' value='viewMeta' onclick=\"viewMeta('" + tx.hash + "')\"/></td>";
+                } else {
+                    html += "</td><td>--</td>";
+                }
+                html += "<td>" + tx.hash + "</td></tr>";
+            }
+            html += "</table>";
+            return html;
+        }
+        function viewMeta(hash) {
+            Process($("#meta" + hash).html(), "meta");
+            ExpandAllClicked("meta");
+            $("#meta").dialog("open");
+        }
     </script>
 </head>
 <body>
@@ -168,6 +252,7 @@
         <div id="account"></div>
         <div id="ledger"></div>
         <div id="tx"></div>
+        <div id="meta" title="Transaction MetaData"></div>
     </div>
 </div>
 </body>
