@@ -4,7 +4,6 @@
     <link rel="shortcut icon" href="//cnwiki.radarlab.org/lib/tpl/dokuwiki/images/favicon.ico" />
     <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-    <link rel="stylesheet" href="./static/jquery-ui.css"/>
     <link href="./static/s.css" type="text/css" rel="stylesheet"/>
     <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
     <script src="./static/c.js" type="text/javascript"></script>
@@ -69,11 +68,10 @@
                 $("<a href=\"javascript:void(0);\" onclick=\"ExpandAllClicked('" + elementId + "')\">ExpandAll</a>").insertBefore("#" + elementId);
                 if (data.result.transactions || data.result.ledger.transactions) {
                     var txHtml = parserTx(data.result.transactions || data.result.ledger.transactions);
-                    alert(txHtml);
                     var txDiv = document.createElement("div");
                     txDiv.innerHTML = txHtml;
                     document.getElementById(parentElid).appendChild(txDiv);
-                    $("&nbsp;<a href=\"javascript:void(0);\" onclick=\"$('#txTable').show()\">ShowInTable</a>").insertBefore("#" + elementId);
+                    $("<a href=\"javascript:void(0);\" onclick=\"$('#txTable').show()\" style='margin-left: 10px'>ShowInTable</a>").insertBefore("#" + elementId);
                 }
                 CollapseAllClicked(elementId);
             });
