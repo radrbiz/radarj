@@ -45,6 +45,11 @@ public enum Field {
     ReserveIncrement(32, Type.UInt32),
     SetFlag(33, Type.UInt32),
     ClearFlag(34, Type.UInt32),
+    DividendLedger(181, Type.UInt32),
+    ReferenceHeight(182, Type.UInt32),
+    ReleaseRate(183, Type.UInt32),
+    NextReleaseTime(184, Type.UInt32),
+
 
     IndexNext(1, Type.UInt64),
     IndexPrevious(2, Type.UInt64),
@@ -54,8 +59,13 @@ public enum Field {
     ExchangeRate(6, Type.UInt64),
     LowNode(7, Type.UInt64),
     HighNode(8, Type.UInt64),
-    DividendCoins(9, Type.UInt64),
     DividendCoinsVBC(181, Type.UInt64),
+    DividendCoinsVBCRank(182, Type.UInt64),
+    DividendCoinsVBCSprd(183, Type.UInt64),
+    DividendVRank(184, Type.UInt64),
+    DividendVSprd(185, Type.UInt64),
+    DividendCoins(186, Type.UInt64),
+    DividendTSprd(187, Type.UInt64),
 
     EmailHash(1, Type.Hash128),
 
@@ -74,6 +84,7 @@ public enum Field {
     Nickname(18, Type.Hash256),
     Amendment(19, Type.Hash256),
     TicketID(20, Type.Hash256),
+    DividendResultHash(181, Type.Hash256),
     hash(257, Type.Hash256),
     index(258, Type.Hash256),
 
@@ -93,6 +104,7 @@ public enum Field {
     // These are auxillary fields
 //    quality(257, Type.AMOUNT),
     BalanceVBC(181, Type.Amount),
+    Reserve(182, Type.Amount),
     taker_gets_funded(258, Type.Amount),
     taker_pays_funded(259, Type.Amount),
 
@@ -117,6 +129,8 @@ public enum Field {
     Issuer(4, Type.AccountID),
     Target(7, Type.AccountID),
     RegularKey(8, Type.AccountID),
+    Referee(181, Type.AccountID),
+    Reference(182, Type.AccountID),
 
     ObjectEndMarker(1, Type.STObject),
     TransactionMetaData(2, Type.STObject),
@@ -128,6 +142,9 @@ public enum Field {
     NewFields(8, Type.STObject),
     TemplateEntry(9, Type.STObject),
     Memo(10, Type.STObject),
+    ReferenceHolder(181, Type.STObject),
+    FeeShareTaker(182, Type.STObject),
+    ReleasePoint(183, Type.STObject),
 
     ArrayEndMarker(1, Type.STArray),
     SigningAccounts(2, Type.STArray),
@@ -138,10 +155,15 @@ public enum Field {
     Sufficient(7, Type.STArray),
     AffectedNodes(8, Type.STArray),
     Memos(9, Type.STArray),
+    References(181, Type.STArray),
+    FeeShareTakers(182, Type.STArray),
+    ReleaseSchedule(183, Type.STArray),
 
     CloseResolution(1, Type.UInt8),
     TemplateEntryType(2, Type.UInt8),
     TransactionResult(3, Type.UInt8),
+    DividendState(181, Type.UInt8),
+    DividendType(182, Type.UInt8),
 
     TakerPaysCurrency(1, Type.Hash160),
     TakerPaysIssuer(2, Type.Hash160),

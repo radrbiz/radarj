@@ -1,20 +1,13 @@
 package org.radarlab.test;
 
-import com.google.gson.Gson;
 import org.json.JSONObject;
-import org.radarlab.api.APIException;
+import org.junit.Test;
 import org.radarlab.api.AccountImpl;
 import org.radarlab.api.TransactionImpl;
+import org.radarlab.client.api.exception.APIException;
 import org.radarlab.client.ws.RadarWebSocketClient;
-import org.junit.Test;
-import org.radarlab.core.AccountID;
-import org.radarlab.core.Amount;
-import org.radarlab.core.Currency;
 
-import java.math.BigDecimal;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -103,19 +96,19 @@ public class TestWebsocket {
     static AccountImpl userImpl = new AccountImpl();
 
     @Test
-    public void testGetAcctInfo() {
+    public void testGetAcctInfo() throws APIException {
         String json = userImpl.getAccountInfo(addrForListen);
         System.out.println(json);
     }
 
     @Test
-    public void testAccountCurrencys() {
+    public void testAccountCurrencys() throws APIException {
         String json = userImpl.accountCurrencies(addrForListen);
         System.out.println(json);
     }
 
     @Test
-    public void testAccountLines() {
+    public void testAccountLines() throws APIException {
         String address = "r4DJTKVx4gsgMK3XW8yzZvk5EWFbhJ8bqL"; // Change me !!
         String peer = "rLeMULVGcGBX7m3ZgSmZ4EXQRLjaLbD6TT";    // Change me !!
         String json = userImpl.getAccountLines(address, peer);
@@ -123,7 +116,7 @@ public class TestWebsocket {
     }
 
     @Test
-    public void testAccountLinesCurrency() {
+    public void testAccountLinesCurrency() throws APIException {
         String json = userImpl.getAccountLinesCurrency(addrForListen);
         System.out.println(json);
     }

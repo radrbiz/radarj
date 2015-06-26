@@ -1,12 +1,13 @@
 package org.radarlab.api;
 
 import com.google.gson.Gson;
-import org.radarlab.client.ws.RadarWebSocketClient;
-import org.radarlab.core.AccountID;
-import org.radarlab.core.AccountLine;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.radarlab.client.api.exception.APIException;
+import org.radarlab.client.ws.RadarWebSocketClient;
+import org.radarlab.core.AccountID;
+import org.radarlab.core.AccountLine;
 import org.radarlab.core.IssuerLine;
 
 import java.util.*;
@@ -14,7 +15,6 @@ import java.util.*;
 
 /**
  * User account implements, defined by WebSocket API of Radar.
- * @see org.radarlab.test.TestWebsocket for usage
  */
 public class AccountImpl {
     private static final Logger logger = Logger.getLogger(AccountImpl.class);
@@ -42,7 +42,7 @@ public class AccountImpl {
         String data = new Gson().toJson(requestData);
         String accountInfo = null;
         try {
-            accountInfo = RadarWebSocketClient.req(data);
+            accountInfo = RadarWebSocketClient.request(data);
         } catch (APIException e) {
             if (e.code.compareTo(APIException.ErrorCode.ADDRESS_NOT_FOUND) == 0) {
                 accountInfo = formatNotFoundUser(address).toString();
@@ -63,7 +63,7 @@ public class AccountImpl {
         data.put("account", address);
 
         String postData = new Gson().toJson(data);
-        String json = RadarWebSocketClient.req(postData);
+        String json = RadarWebSocketClient.request(postData);
         return json;
     }
 
@@ -97,7 +97,7 @@ public class AccountImpl {
             TreeMap<String, IssuerLine> resultMap = new TreeMap<>();
             String accountInfo;
             try {
-                accountInfo = RadarWebSocketClient.req(data);
+                accountInfo = RadarWebSocketClient.request(data);
                 JSONObject json = new JSONObject(accountInfo);
                 JSONArray lines = json.getJSONObject("result").getJSONArray("lines");
                 for (int i = 0; i < lines.length(); i++) {
@@ -158,7 +158,7 @@ public class AccountImpl {
         String accountInfo;
 
         try {
-            accountInfo = RadarWebSocketClient.req(data);
+            accountInfo = RadarWebSocketClient.request(data);
             JSONObject json = new JSONObject(accountInfo);
             String status = json.getString("status");
             if (!status.equalsIgnoreCase("success")) {  //result not success

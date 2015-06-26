@@ -27,7 +27,9 @@ public enum TransactionType implements SerializedType {
     EnableAmendment(100),
     SetFee(101),
     AddReferee(182),
-    Dividend(181);
+    Dividend(181),
+    ActiveAccount(183),
+    Issue(184);
 
     public int asInteger() {
         return ord;
@@ -71,7 +73,7 @@ public enum TransactionType implements SerializedType {
         @Override
         public TransactionType fromParser(BinaryParser parser, Integer hint) {
             byte[] read = parser.read(2);
-            return fromNumber((read[0] << 8) | read[1]);
+            return fromNumber(((read[0] << 8) | read[1]) & 0x0FF);
         }
 
         @Override
