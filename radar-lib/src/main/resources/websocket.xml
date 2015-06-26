@@ -1,0 +1,5 @@
+<ws>
+    <simple>ws://s1.radarlab.org:5006</simple>
+    <full>ws://api.radarlab.org:5006</full>
+    <backup>ws://s2.radarlab.org:5006</backup>
+</ws>

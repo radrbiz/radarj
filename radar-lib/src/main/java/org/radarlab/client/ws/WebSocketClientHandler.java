@@ -62,7 +62,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             RadarWebSocketClient.queues.remove(requestId);
             return message;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
@@ -92,7 +92,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         Channel ch = ctx.channel();
         if (!handshaker.isHandshakeComplete()) {
             handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-            System.out.println("WebSocket Client connected!");
+            logger.info("WebSocket Client:"+ctx.name()+" connected!");
             handshakeFuture.setSuccess();
             return;
         }
@@ -108,7 +108,6 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         if (frame instanceof TextWebSocketFrame) {
             TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
             String result = textFrame.text();
-//            logger.info(result);
             JSONObject json = new JSONObject(result);
             if(json.has("id")) {
                 RadarWebSocketClient.queues.get(json.getLong("id")).put(result);
@@ -125,8 +124,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        logger.error("Handler receive exception:" + cause.getMessage());
-        cause.printStackTrace();
+        logger.error("Handler caught exception: " + cause.getMessage(), cause);
         if (!handshakeFuture.isDone()) {
             handshakeFuture.setFailure(cause);
         }
