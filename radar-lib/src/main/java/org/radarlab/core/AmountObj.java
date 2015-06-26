@@ -1,21 +1,33 @@
 package org.radarlab.core;
 
+/**
+ * Created by ac
+ * since 15/1/22.
+ */
 public class AmountObj {
-    private Double amount;
+    private String amount;
     private String currency;
     private String issuer;
+    private String account;
 
-    public AmountObj(Double amount, String currency, String issuer){
+    public AmountObj(String amount, String currency, String issuer){
         this.amount = amount;
         this.currency = currency;
         this.issuer = issuer;
     }
 
-    public Double getAmount() {
+    public AmountObj(String amount, String currency, String issuer, String account){
+        this.amount = amount;
+        this.currency = currency;
+        this.issuer = issuer;
+        this.account = account;
+    }
+
+    public String getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(String amount) {
         this.amount = amount;
     }
 
@@ -33,5 +45,13 @@ public class AmountObj {
 
     public void setIssuer(String issuer) {
         this.issuer = issuer;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
     }
 }

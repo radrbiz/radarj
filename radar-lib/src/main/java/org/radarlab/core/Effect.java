@@ -1,5 +1,9 @@
 package org.radarlab.core;
 
+/**
+ * Created by Andy
+ * since 15/1/4.
+ */
 public class Effect {
     private AmountObj amount;
     private AmountObj balance;

@@ -22,6 +22,7 @@ public class Currency extends Hash160 {
     public static final Currency NEUTRAL = new Currency(BigInteger.ONE.toByteArray());
     public static final Currency VRP = new Currency(BigInteger.ZERO.toByteArray());
     public static final Currency VBC = new Currency(Hex.decode("FF"));
+    public static final Currency ASSET = new Currency(Hex.decode("4153534554000000000000000000000000000000"));
 
     @Override
     public Object toJSON() {
@@ -64,7 +65,7 @@ public class Currency extends Hash160 {
                 return DEMURRAGE;
             } else if ((typeByte & 0x80) != 0) {
                 return HASH;
-            } else {
+            }else {
                 return UNKNOWN;
             }
         }
@@ -137,7 +138,10 @@ public class Currency extends Hash160 {
                 return VRP;
             }else if(value.equals("VBC")){
                 return VBC;
-            } else {
+            }else if(value.equals("ASSET")){
+                return ASSET;
+            }
+            else {
                 if (!(value.length() == 3)) {
 //                if (!value.matches("[A-Z0-9]{3}")) {
                     throw new RuntimeException("Currency code must be 3 characters");
@@ -175,6 +179,9 @@ public class Currency extends Hash160 {
             case DEMURRAGE:
             case UNKNOWN:
             default:
+                if(this.equals(ASSET)){
+                    return "ASSET";
+                }
                 return super.toString();
         }
     }
@@ -210,7 +217,7 @@ public class Currency extends Hash160 {
 
     /*
     * The following are static methods, legacy from when there was no
-    * usage of Currency objects, just String with "VRP" ambiguity.
+    * usage of Currency objects, just String with "XRP" ambiguity.
     * */
     public static byte[] encodeCurrency(String currencyCode) {
         byte[] currencyBytes = new byte[20];
@@ -247,4 +254,5 @@ public class Currency extends Hash160 {
         char c = charFrom(bytes, offset + 2);
         return "" + a + b + c;
     }
+
 }

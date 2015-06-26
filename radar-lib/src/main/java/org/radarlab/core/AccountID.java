@@ -4,13 +4,13 @@ import org.radarlab.core.exception.RadarException;
 import org.radarlab.core.fields.Field;
 import org.radarlab.core.fields.TypedFields;
 import org.radarlab.core.hash.B58;
-import org.radarlab.core.hash.Hash160;
 import org.radarlab.core.serialized.BinaryParser;
 import org.radarlab.core.serialized.BytesSink;
 import org.radarlab.core.serialized.TypeTranslator;
 import org.radarlab.core.uint.UInt32;
 import org.radarlab.crypto.ecdsa.IKeyPair;
 import org.radarlab.crypto.ecdsa.Seed;
+import org.radarlab.core.hash.Hash160;
 import org.ripple.bouncycastle.util.encoders.Hex;
 
 import java.util.HashMap;
@@ -45,6 +45,7 @@ public class AccountID extends Hash160 {
         NEUTRAL = fromInteger(1);
         VBC_0 = fromInteger(10000);
         VBC_1 = fromInteger(20000);
+//        System.out.println("Account_0 : " + VRP_ISSUER.address);
 //        System.out.println("Account_1 : " + NEUTRAL.address);
 //        System.out.println("VBC_0     : " + VBC_0.address);
 //        System.out.println("VBC_1     : " + VBC_1.address);
@@ -178,7 +179,7 @@ public class AccountID extends Hash160 {
     public static TypedFields.AccountIDField accountField(final Field f) {
         return new TypedFields.AccountIDField() {
             @Override
-            public Field getField() {
+            public org.radarlab.core.fields.Field getField() {
                 return f;
             }
         };

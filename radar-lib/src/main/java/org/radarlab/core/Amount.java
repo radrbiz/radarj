@@ -16,7 +16,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 /**
- * In radar, amounts are either VRP/VBC, the native currency, or an IOU of
+ * In radar, amounts are either XRP, the native currency, or an IOU of
  * a given currency as issued by a designated account.
  */
 public class Amount extends Number implements SerializedType, Comparable<org.radarlab.core.Amount>
@@ -39,7 +39,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     public static final MathContext MATH_CONTEXT = new MathContext(16, RoundingMode.HALF_UP);
     // The maximum amount of digits in mantissa of an IOU amount
     public static final int MAXIMUM_IOU_PRECISION = 16;
-    // The smallest quantity of an VRP is a drop, 1 millionth of an VRP
+    // The smallest quantity of an XRP is a drop, 1 millionth of an XRP
     public static final int MAXIMUM_NATIVE_SCALE = 6;
     // Defines bounds for native amounts
     public static final BigDecimal MAX_NATIVE_VALUE = parseDecimal("100,000,000,000.0");
@@ -52,11 +52,11 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
 
     public static final org.radarlab.core.Amount ONE_VRP = fromString("1.0");
 
-    // The quantity of VRP or Issue(currency/issuer pairing)
-    // When native, the value unit is VRP, not drops.
+    // The quantity of XRP or Issue(currency/issuer pairing)
+    // When native, the value unit is XRP, not drops.
     private BigDecimal value;
     private Currency currency;
-    // If the currency is VRP
+    // If the currency is XRP
     private boolean isNative;
     // Normally, in the constructor of an Amount the value is checked
     // that it's scale/precision and quantity are correctly bounded.
@@ -131,7 +131,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
         if (isNative()) {
             issuer = AccountID.VRP_ISSUER;
             if (!unbounded) {
-                checkVRPBounds(value);
+                checkXRPBounds(value);
             }
             // Offset is unused for native amounts
             offset = -6; // compared to drops.
@@ -152,7 +152,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
         if (round) {
             newValue = roundValue(newValue, isNative);
         }
-        return new Amount(newValue, currency, issuer, isNative, unbounded);
+        return new org.radarlab.core.Amount(newValue, currency, issuer, isNative, unbounded);
     }
 
     private org.radarlab.core.Amount newValue(BigDecimal val, boolean round) {
@@ -365,8 +365,8 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     }
     /**
      * @return Amount
-     * The real native unit is a drop, one million of which are an VRP.
-     * We want `one` unit at VRP scale (1e6 drops), or if it's an IOU,
+     * The real native unit is a drop, one million of which are an XRP.
+     * We want `one` unit at XRP scale (1e6 drops), or if it's an IOU,
      * just `one`.
      */
     public org.radarlab.core.Amount one() {
@@ -465,11 +465,19 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
                 mantissa[1] &= 0x3F;
 
                 value = new BigDecimal(new BigInteger(sign, mantissa), -offset);
-                return new Amount(value, curr, issuer, false);
+                return new org.radarlab.core.Amount(value, curr, issuer, false);
             } else {
                 mantissa[0] &= 0x3F;
-                value = xrpFromDropsMantissa(mantissa, sign);
-                return new Amount(value);
+//                mantissa[0] &= 0x20;
+                byte res = (byte) (mantissa[0] & 0x20);
+                if(res != 0){
+                    mantissa[0] &= ~0x20;
+                    value = new BigDecimal(new BigInteger(sign, mantissa), 6);
+                    return new org.radarlab.core.Amount(value, Currency.VBC, AccountID.VBC_0, false);
+                }else {
+                    value = xrpFromDropsMantissa(mantissa, sign);
+                    return new org.radarlab.core.Amount(value);
+                }
             }
         }
 
@@ -489,7 +497,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
                 String valueString = jsonObject.getString("value");
                 String issuerString = jsonObject.getString("issuer");
                 String currencyString = jsonObject.getString("currency");
-                return new Amount(new BigDecimal(valueString), currencyString, issuerString);
+                return new org.radarlab.core.Amount(new BigDecimal(valueString), currencyString, issuerString);
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
@@ -527,7 +535,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     }
 
     public org.radarlab.core.Amount newIssuer(AccountID issuer) {
-        return new Amount(value, currency, issuer);
+        return new org.radarlab.core.Amount(value, currency, issuer);
     }
 
     // Static constructors
@@ -544,7 +552,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     public static org.radarlab.core.Amount fromDropString(String val) {
         BigDecimal drops = new BigDecimal(val).scaleByPowerOfTen(-6);
         checkDropsValueWhole(val);
-        return new Amount(drops);
+        return new org.radarlab.core.Amount(drops);
     }
 
     public static org.radarlab.core.Amount fromIOUString(String val) {
@@ -552,16 +560,16 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
         if (split.length == 1) {
             throw new RuntimeException("IOU string must be in the form number/currencyString or number/currencyString/issuerString");
         } else if (split.length == 2) {
-            return new Amount(new BigDecimal(split[0]), split[1]);
+            return new org.radarlab.core.Amount(new BigDecimal(split[0]), split[1]);
         } else {
-            return new Amount(new BigDecimal(split[0]), split[1], split[2]);
+            return new org.radarlab.core.Amount(new BigDecimal(split[0]), split[1], split[2]);
         }
     }
 
     @Deprecated
     private static org.radarlab.core.Amount fromXrpString(String valueString) {
         BigDecimal val = new BigDecimal(valueString);
-        return new Amount(val);
+        return new org.radarlab.core.Amount(val);
     }
 
     /**
@@ -616,7 +624,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     }
 
     /**
-     * @return A String containing the value as a decimal number (in VRP scale)
+     * @return A String containing the value as a decimal number (in XRP scale)
      */
     public String valueText() {
         return value.signum() == 0 ? "0" : value().toPlainString();
@@ -630,7 +638,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
 
     public static void checkUpperBound(BigDecimal val) {
         if (val.compareTo(MAX_NATIVE_VALUE) == 1) {
-            throw getOutOfBoundsError(val, "bigger", MAX_NATIVE_VALUE);
+//            throw getOutOfBoundsError(val, "bigger", MAX_NATIVE_VALUE);
         }
     }
 
@@ -638,7 +646,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
         return new PrecisionError(abs.toPlainString() + " is " + sized + " than bound " + bound);
     }
 
-    public static void checkVRPBounds(BigDecimal value) {
+    public static void checkXRPBounds(BigDecimal value) {
         // This is for that damn offer at index: 6310D78E6AD408892743DD62455694162E758DA283D0E4A2CB3A3C173B7C794A
         if (value.compareTo(TAKER_PAYS_FOR_THAT_DAMN_OFFER) == 0) {
             return;

@@ -2,6 +2,10 @@ package org.radarlab.core;
 
 import java.util.List;
 
+/**
+ * Created by Andy
+ * since 14/12/31.
+ */
 public class TxObj {
     private String date;
     private String sender;
@@ -16,6 +20,7 @@ public class TxObj {
     private AmountObj takerPays;
     private AmountObj partiallyGets;
     private AmountObj partiallyPays;
+
     private String OfferStatus;
 
     private List<Effect> effects;
@@ -23,6 +28,7 @@ public class TxObj {
 
     private AmountObj fee;
     private long balance;
+    private AmountObj sendMax;
 
     public String getDate() {
         return date;
@@ -166,5 +172,13 @@ public class TxObj {
 
     public void setPartiallyPays(AmountObj partiallyPays) {
         this.partiallyPays = partiallyPays;
+    }
+
+    public AmountObj getSendMax() {
+        return sendMax;
+    }
+
+    public void setSendMax(AmountObj sendMax) {
+        this.sendMax = sendMax;
     }
 }

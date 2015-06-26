@@ -13,6 +13,7 @@ import org.radarlab.core.types.known.tx.Transaction;
 import org.radarlab.core.types.known.tx.result.AffectedNode;
 import org.radarlab.core.types.known.tx.result.TransactionMeta;
 import org.radarlab.core.types.known.tx.txns.*;
+import org.radarlab.core.types.known.tx.txns.Issue;
 
 public class STObjectFormatter {
     public static STObject doFormatted(STObject source) {
@@ -89,7 +90,12 @@ public class STObjectFormatter {
             case Dividend:
                 constructed = new Dividend();
                 break;
-
+            case ActiveAccount:
+                constructed = new ActiveAccount();
+                break;
+            case Issue:
+                constructed = new Issue();
+                break;
         }
         if (constructed == null) {
             constructed = new Transaction(transactionType);
