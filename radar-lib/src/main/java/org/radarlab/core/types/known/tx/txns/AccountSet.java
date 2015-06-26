@@ -1,6 +1,7 @@
 package org.radarlab.core.types.known.tx.txns;
 
 
+import org.radarlab.core.TxObj;
 import org.radarlab.core.VariableLength;
 import org.radarlab.core.fields.Field;
 import org.radarlab.core.hash.Hash128;
@@ -29,5 +30,12 @@ public class AccountSet extends Transaction {
     public void walletLocator(Hash256 val) {put(Field.WalletLocator, val);}
     public void messageKey(VariableLength val) {put(Field.MessageKey, val);}
     public void domain(VariableLength val) {put(Field.Domain, val);}
+
+    @Override
+    public TxObj analyze(String address){
+        init();
+        item.setType("account_set");
+        return item;
+    }
 
 }

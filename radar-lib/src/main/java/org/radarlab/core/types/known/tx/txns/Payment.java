@@ -1,9 +1,7 @@
 package org.radarlab.core.types.known.tx.txns;
 
 
-import org.radarlab.core.AccountID;
-import org.radarlab.core.Amount;
-import org.radarlab.core.PathSet;
+import org.radarlab.core.*;
 import org.radarlab.core.fields.Field;
 import org.radarlab.core.hash.Hash256;
 import org.radarlab.core.serialized.enums.TransactionType;
@@ -27,5 +25,42 @@ public class Payment extends Transaction {
     public void sendMax(Amount val) {put(Field.SendMax, val);}
     public void destination(AccountID val) {put(Field.Destination, val);}
     public void paths(PathSet val) {put(Field.Paths, val);}
+
+    @Override
+    public TxObj analyze(String address){
+        init();
+        item.setRecipient(destination().address);
+        if (!destination().address.equals(address))
+            item.setContact(destination().address);
+        String paymentAmount = amount().valueText();
+        AmountObj amount = new AmountObj(paymentAmount, amount().currencyString(), amount().issuerString());
+        amount.setCurrency(amount().currencyString());
+        item.setAmount(amount);
+
+        if (!address.equals(destination().address) && !address.equals(account().address)) {
+            if (paths() != null) {
+                for (PathSet.Path path : paths()) {
+                    for (PathSet.Hop hop : path) {
+                        if (hop.account != null && address.equals(hop.account.address)) {
+                            item.setType("radaring");
+                            break;
+                        }
+                    }
+                }
+                if (item.getType() == null) {
+                    item.setType("offercreate");
+                }
+            } else
+                item.setType("radaring");
+        } else {
+            if (address.equals(destination().address) && address.equals(account().address)) {
+                item.setType("exchange");
+                item.setSendMax(new AmountObj(sendMax().valueText(),
+                        sendMax().currencyString().equals("XRP") ? "VRP" : sendMax().currencyString(), sendMax().issuerString()));
+            } else
+                item.setType(destination().address.equals(address) ? "received" : "sent");
+        }
+        return item;
+    }
 
 }

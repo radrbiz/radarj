@@ -1,10 +1,7 @@
 package org.radarlab.core.types.known.tx;
 
 
-import org.radarlab.core.AccountID;
-import org.radarlab.core.Amount;
-import org.radarlab.core.STObject;
-import org.radarlab.core.VariableLength;
+import org.radarlab.core.*;
 import org.radarlab.core.enums.TransactionFlag;
 import org.radarlab.core.fields.Field;
 import org.radarlab.core.formats.TxFormat;
@@ -18,6 +15,7 @@ import org.radarlab.core.uint.UInt32;
 public class Transaction extends STObject {
     public static final boolean CANONICAL_FLAG_DEPLOYED = true;
     public static final UInt32 CANONICAL_SIGNATURE = new UInt32(TransactionFlag.FullyCanonicalSig);
+    public static TxObj item;
 
     public Transaction(TransactionType type) {
         setFormat(TxFormat.formats.get(type));
@@ -47,6 +45,19 @@ public class Transaction extends STObject {
             flags = flags.or(CANONICAL_SIGNATURE);
         }
         put(UInt32.Flags, flags);
+    }
+
+    public void init(){
+        item = new TxObj();
+        item.setSender(account().address);
+        //if is tx maker, then set fee obj;
+        AmountObj fee = new AmountObj(fee().valueText(), "VRP", null);
+        item.setFee(fee);
+    }
+
+    public TxObj analyze(String address){
+        item.setType("unknown");
+        return item;
     }
 
     public UInt32 flags() {return get(UInt32.Flags);}
