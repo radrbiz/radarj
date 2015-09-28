@@ -364,8 +364,8 @@ public class TestTxn {
         }
     }
 
-
-    private String makeTx(String tx_blob) throws Exception {
+    @Test
+    public void testMakeTx(String tx_blob) throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("id", 0);
         data.put("command", "submit");
@@ -373,6 +373,5 @@ public class TestTxn {
         String postData = new Gson().toJson(data);
         String json = RadarWebSocketClient.request(postData);
         System.out.println("make tx result: " + json);
-        return json;
     }
 }
