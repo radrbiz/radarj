@@ -30,7 +30,8 @@ import java.util.Map;
 
 /**
  * Implements of all kinds of transactions, defined by WebSocket API of Radar.
- * @see  "API documents"
+ *
+ * @see "API documents"
  */
 public class TransactionImpl {
     private static final Logger logger = Logger.getLogger(TransactionImpl.class);
@@ -143,7 +144,8 @@ public class TransactionImpl {
     /**
      * retrieves a list of offers made by a given account that are outstanding as of a particular ledger version.
      * See: https://ripple.com/build/rippled-apis/#account-offers
-     * @param limit   (Optional, default varies) Limit the number of transactions to retrieve. The server is not required to honor this value. Cannot be lower than 10 or higher than 400.
+     *
+     * @param limit (Optional, default varies) Limit the number of transactions to retrieve. The server is not required to honor this value. Cannot be lower than 10 or higher than 400.
      * @return
      */
     public String accountOffers(String address, int limit, String c1, String issuer1, String c2, String issuer2, String marker) throws APIException {
@@ -246,6 +248,65 @@ public class TransactionImpl {
         return json;
     }
 
+    public int getClosedLedgerIndex() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", 1);
+        params.put("command", "ledger_closed");
+
+        String data = new Gson().toJson(params);
+        try {
+            String res = RadarWebSocketClient.request(data);
+            JSONObject resJson = new JSONObject(res);
+            if (resJson.has("status") && resJson.getString("status").equalsIgnoreCase("success")) {
+                JSONObject jsonObjectResult = resJson.getJSONObject("result");
+                return jsonObjectResult.getInt("ledger_index");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * @param reference
+     * @param referee
+     * @param account
+     * @param seed
+     * @param amount
+     * @param sequence
+     * @return
+     * @throws APIException
+     */
+    public String activateUser(String reference, String referee, String account, String seed, Amount amount, int sequence) throws APIException {
+        Integer ledgerIndex = getClosedLedgerIndex() + 20;
+
+        IKeyPair kp = Seed.getKeyPair(seed);
+        ActiveAccount activeAccount = new ActiveAccount();
+        AccountID referenceAccount = AccountID.fromAddress(reference);
+        AccountID refereeAccount = AccountID.fromAddress(referee);
+        activeAccount.referee(refereeAccount);
+        activeAccount.reference(referenceAccount);
+        activeAccount.lastLedgerSequence(new UInt32(ledgerIndex));
+        if (amount != null) {
+            activeAccount.amount(amount);
+        }
+
+        activeAccount.account(AccountID.fromSeedBytes(B58.getInstance().decodeFamilySeed(seed)));
+
+        long fee = 1000;
+        if (amount != null) {
+            if (amount.currencyString().equals("VRP") || amount.currencyString().equals("XRP") || amount.currencyString().equals("VBC")) {
+                fee = (long) (amount.multiply(new BigDecimal("1000")).doubleValue());
+            }
+        }
+        fee = Math.max(1000, fee);
+        fee = 10000 + fee;
+
+        SignedTransaction sign = new SignedTransaction(activeAccount);
+        sign.prepare(kp, Amount.fromString(String.valueOf(fee)), new UInt32(sequence), null);
+        String json = makeTx(sign.tx_blob);
+        return json;
+    }
 
     /**
      * All methods using this makeTx, will call submit interface of "radard", and blob data needs be signed.
@@ -264,21 +325,20 @@ public class TransactionImpl {
 
     public String getAssetName(String currency, String gateway) {
         if (currency.equals("ASSET")) {
-            if("rpCA4XHCjHtKvPZPDHBqGpkzEWsFQLNXfv".equals(gateway)){
+            if ("rpCA4XHCjHtKvPZPDHBqGpkzEWsFQLNXfv".equals(gateway)) {
                 return "SGVL";
-            }
-            else
+            } else
                 return currency;
         } else {
             return currency;
         }
     }
+
     public String getAssetName(Amount amount) {
         if (amount != null && "ASSET".equals(amount.currencyString())) {
-            if("rpCA4XHCjHtKvPZPDHBqGpkzEWsFQLNXfv".equals(amount.issuerString())){
+            if ("rpCA4XHCjHtKvPZPDHBqGpkzEWsFQLNXfv".equals(amount.issuerString())) {
                 return "SGVL";
-            }
-            else
+            } else
                 return amount.currencyString();
         } else {
             return amount.currencyString();
@@ -319,6 +379,8 @@ public class TransactionImpl {
                 case "account_set":
                 case "addreferee":
                 case "connecting":
+                case "set_regular_key":
+                case "cancel_regular_key":
                     if (nodeType == LedgerEntryType.AccountRoot) {
                         parserAccountRoot(field, node, preFields, address, effects, item);
                     }
@@ -524,10 +586,10 @@ public class TransactionImpl {
                 if (preFields != null) {
                     preTakerGets = (Amount) preFields.get(Field.TakerGets);
                     preTakerPays = (Amount) preFields.get(Field.TakerPays);
-                    if(preTakerGets == null){
+                    if (preTakerGets == null) {
                         preTakerGets = takerGets;
                     }
-                    if(preTakerPays == null){
+                    if (preTakerPays == null) {
                         preTakerPays = takerPays;
                     }
                     if (item.getTakerGets() == null) {
@@ -647,6 +709,9 @@ public class TransactionImpl {
      * @param effects
      */
     private void parserRippleState(STObject field, AffectedNode node, STObject preFields, String address, List<Effect> effects, TxObj item) {
+        if (item.getType() != null && item.getType().startsWith("active")) {
+            return;
+        }
         Amount highLimit = (Amount) field.get(Field.HighLimit);
         Amount lowLimit = (Amount) field.get(Field.LowLimit);
         Amount balance = (Amount) field.get(Field.Balance);
@@ -673,7 +738,7 @@ public class TransactionImpl {
                     if (preReserve != null) {
                         balanceChange = balanceChange.add(reserve.subtract(preReserve));
                         if (reserve.isZero() && preReserve.isZero()) {
-                            logger.debug("tx-malformed"+ "tx-reserve" + address + item.getHash());
+                            logger.debug("tx-malformed" + "tx-reserve" + address + ", " + item.getHash());
                         }
                     }
                 } else {
@@ -753,6 +818,14 @@ public class TransactionImpl {
                 balanceChange = balance.subtract(preBalance).value();
             if (preBalanceVBC != null)
                 balanceVBCChange = balanceVBC.subtract(preBalanceVBC).value();
+
+            if (item.getType().equals("set_regular_key")) {
+                AccountID regularKey = (AccountID) preFields.get(Field.RegularKey);
+                if (regularKey != null) {
+                    item.setRecipient(regularKey.address);
+                    item.setType("cancel_regular_key");
+                }
+            }
         }
         //if vbc is changing, then add to effect
         if (balanceVBCChange.abs().doubleValue() > 0) {
@@ -761,6 +834,7 @@ public class TransactionImpl {
             effect.setBalance(new AmountObj(balanceVBC.value().toPlainString(), "VBC", "-"));
             effect.setType("amount");
             effects.add(effect);
+
         }
         if (balanceChange.abs().doubleValue() > 0) {
             //VRP changes, then should know if only fee changes
@@ -824,7 +898,7 @@ public class TransactionImpl {
                         List<AmountObj> list = shares.get(address);
                         for (int j = 0; j < list.size(); j++) {
                             AmountObj amount = list.get(j);
-                            if (effect.getAmount().getAmount().equals(amount.getAmount())  //same amount
+                            if (new BigDecimal(effect.getAmount().getAmount()).subtract(new BigDecimal(amount.getAmount())).abs().compareTo(new BigDecimal("0.000000001")) == -1  //same amount
                                     && effect.getAmount().getIssuer().equals(amount.getIssuer()) //same issuer
                                     && !effect.getAmount().getIssuer().equals(address)) { //not gateway
                                 item.setType("fee_share");
@@ -927,7 +1001,7 @@ public class TransactionImpl {
      * @param offers
      * @param currency1
      * @param currency2
-     * @param flag     0--asks(sell)  1--bids(buy)
+     * @param flag      0--asks(sell)  1--bids(buy)
      * @return
      */
     private List<JSONObject> formatOfferArray(JSONArray offers, String currency1, String currency2, int flag, int limit) {
@@ -990,9 +1064,9 @@ public class TransactionImpl {
                 BigDecimal showPrice;
                 if (isNative(currency2)) {
                     showPrice = new BigDecimal(jo.getString("quality")).divide(new BigDecimal(1000000));
-                } else if(isNative(currency1)) {
+                } else if (isNative(currency1)) {
                     showPrice = new BigDecimal(jo.getString("quality")).multiply(new BigDecimal(1000000));
-                }else{
+                } else {
                     showPrice = new BigDecimal(jo.getString("quality"));
                 }
                 JSONObject jsonObject = new JSONObject();
@@ -1025,7 +1099,7 @@ public class TransactionImpl {
         return result;
     }
 
-    private boolean isNative(String currency){
+    private boolean isNative(String currency) {
         return currency.equalsIgnoreCase("VRP") || currency.equalsIgnoreCase("XRP") || currency.equalsIgnoreCase("VBC");
     }
 
