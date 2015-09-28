@@ -2,10 +2,7 @@ package org.radarlab.test;
 
 import com.google.gson.Gson;
 import org.radarlab.client.ws.RadarWebSocketClient;
-import org.radarlab.core.AccountID;
-import org.radarlab.core.Amount;
-import org.radarlab.core.Currency;
-import org.radarlab.core.STObject;
+import org.radarlab.core.*;
 import org.radarlab.core.hash.B58;
 import org.radarlab.core.types.known.tx.Transaction;
 import org.radarlab.core.types.known.tx.result.TransactionMeta;
@@ -33,6 +30,64 @@ public class TestTxn {
 
     AccountID dest2          = AccountID.fromAddress(dest2Str);
     AccountID addrCNYGateway = AccountID.fromAddress(destCNYStr);
+
+    @Test
+    public void testCreateActivateUser(){
+        String seed = "test_seed_here";
+        String reference = "reference_address_here";
+        String referee = "referee_address_here";
+        Amount amount = new Amount(new BigDecimal(1000).divide(new BigDecimal(1000000)),Currency.VBC,AccountID.VBC_0);
+
+        IKeyPair kp = Seed.getKeyPair(seed);
+        ActiveAccount activeAccount = new ActiveAccount();
+        AccountID referenceAccount = AccountID.fromAddress(reference);
+        AccountID refereeAccount = AccountID.fromAddress(referee);
+        activeAccount.referee(refereeAccount);
+        activeAccount.reference(referenceAccount);
+        if (amount != null) {
+            activeAccount.amount(amount);
+        }
+
+        activeAccount.account(AccountID.fromSeedBytes(B58.getInstance().decodeFamilySeed(seed)));
+
+        Amounts amounts = new Amounts();
+
+        Entry entry = new Entry();
+        entry.Amount(Amount.fromDropString("10000"));
+        amounts.add(entry);
+
+        Limits limits = new Limits();
+        Entry entryLimit = new Entry();
+        entryLimit.LimitAmount(new Amount(new BigDecimal(10000000),Currency.fromString("CNY"),AccountID.fromAddress("rLUti5o23WCkJ4YYqSDU5qywLdUHnFwDw6")));
+        entryLimit.Flags(new UInt32(131072));
+        limits.add(entryLimit);
+
+        Entry entryLimit2 = new Entry();
+        entryLimit2.LimitAmount(new Amount(new BigDecimal(10000000),Currency.fromString("USD"),AccountID.fromAddress("rLUti5o23WCkJ4YYqSDU5qywLdUHnFwDw6")));
+        entryLimit2.Flags(new UInt32(131072));
+        limits.add(entryLimit2);
+
+        activeAccount.Amounts(amounts);
+        activeAccount.Limits(limits);
+
+        long fee = 1000;
+        if (amount != null) {
+            if (amount.currencyString().equals("VRP") || amount.currencyString().equals("XRP") || amount.currencyString().equals("VBC")) {
+                fee = (long) (amount.multiply(new BigDecimal("1000")).doubleValue());
+            }
+        }
+        fee = Math.max(1000, fee);
+        fee = 10000 + fee;
+
+
+        SignedTransaction sign = new SignedTransaction(activeAccount);
+        sign.prepare(kp, Amount.fromString(String.valueOf(fee)), new UInt32(9), null);
+
+        System.out.println("blob:" + sign.tx_blob);
+        System.out.println("hash:" + sign.hash);
+        System.out.println("txn_type:" + sign.transactionType());
+        System.out.println(activeAccount);
+    }
 
     @Test
     public void testCreatePaymentTxSign() throws Exception {

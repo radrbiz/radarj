@@ -145,6 +145,7 @@ public enum Field {
     ReferenceHolder(181, Type.STObject),
     FeeShareTaker(182, Type.STObject),
     ReleasePoint(183, Type.STObject),
+    Entry(184,Type.STObject),
 
     ArrayEndMarker(1, Type.STArray),
     SigningAccounts(2, Type.STArray),
@@ -158,6 +159,9 @@ public enum Field {
     References(181, Type.STArray),
     FeeShareTakers(182, Type.STArray),
     ReleaseSchedule(183, Type.STArray),
+    Amounts(184,Type.STArray),
+    Limits(185,Type.STArray),
+
 
     CloseResolution(1, Type.UInt8),
     TemplateEntryType(2, Type.UInt8),

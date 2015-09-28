@@ -2,6 +2,7 @@ package org.radarlab.core.types.known.tx.txns;
 
 import org.radarlab.core.AccountID;
 import org.radarlab.core.Amount;
+import org.radarlab.core.STArray;
 import org.radarlab.core.TxObj;
 import org.radarlab.core.fields.Field;
 import org.radarlab.core.serialized.enums.TransactionType;
@@ -27,6 +28,10 @@ public class ActiveAccount extends Transaction {
     public void amount(Amount val) {put(Field.Amount, val);}
     public void referee(AccountID val) {put(Field.Referee, val);}
     public void reference(AccountID val) {put(Field.Reference, val);}
+
+    public void Amounts(STArray val){put(Field.Amounts,val);}
+    public void Limits(STArray val){put(Field.Limits,val);}
+
     @Override
     public TxObj analyze(String address){
         init();
