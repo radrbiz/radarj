@@ -59,8 +59,6 @@ public class STObjectFormatter {
                 break;
             case PasswordFund:
                 break;
-            case SetRegularKey:
-                break;
             case NickNameSet:
                 break;
             case OfferCreate:
@@ -95,6 +93,9 @@ public class STObjectFormatter {
                 break;
             case Issue:
                 constructed = new Issue();
+                break;
+            case SetRegularKey:
+                constructed = new SetRegularKey();
                 break;
         }
         if (constructed == null) {
