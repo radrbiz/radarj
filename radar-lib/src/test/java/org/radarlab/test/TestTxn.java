@@ -31,8 +31,42 @@ public class TestTxn {
     AccountID dest2          = AccountID.fromAddress(dest2Str);
     AccountID addrCNYGateway = AccountID.fromAddress(destCNYStr);
 
+
+    /**
+     * Sign tx using seed
+     * about fee, please check: https://cnwiki.radarlab.org/transaction_fee
+     * about seed, please check: https://cnwiki.radarlab.org/ds:account
+     * about tx, please check: http://www.radarlab.org/dev/transactions.html
+     */
     @Test
-    public void testCreateActivateUser(){
+    public void testSignTx(){
+        System.out.println(System.currentTimeMillis());
+        System.out.println(Amount.fromString("1000"));
+        String txJson = "{\n" +
+                " \"TransactionType\": \"Payment\",\n" +
+                " \"Account\": \"account_address_here\",\n" +
+                " \"Destination\": \"recipient_address_here\",\n" +
+                " \"Amount\": {\n" +
+                " \"currency\": \"CNY\",\n" +
+                " \"value\": \"0.013\",\n" +
+                " \"issuer\": \"rLUti5o23WCkJ4YYqSDU5qywLdUHnFwDw6\"\n" +
+                " }\n}";
+        JSONObject tx = new JSONObject(txJson);
+        STObject txObj = STObject.fromJSONObject(tx);
+        Transaction txn = (Transaction) txObj;
+        String seed = "seed_here";
+        IKeyPair kp = Seed.getKeyPair(seed);
+        SignedTransaction signedTransaction = new SignedTransaction(txn);
+        signedTransaction.prepare(kp, Amount.fromString("0.001"), new UInt32(28), null);
+        System.out.println(signedTransaction.tx_blob);
+        System.out.println(signedTransaction.hash.toHex());
+    }
+
+    /**
+     * about ActivateAccount, please check: http://www.radarlab.org/dev/transactions.html#activeaccount
+     */
+    @Test
+    public void testActivateAccount(){
         String seed = "test_seed_here";
         String reference = "reference_address_here";
         String referee = "referee_address_here";
