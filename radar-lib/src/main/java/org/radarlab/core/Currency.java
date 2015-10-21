@@ -217,7 +217,7 @@ public class Currency extends Hash160 {
 
     /*
     * The following are static methods, legacy from when there was no
-    * usage of Currency objects, just String with "XRP" ambiguity.
+    * usage of Currency objects, just String with "VRP" ambiguity.
     * */
     public static byte[] encodeCurrency(String currencyCode) {
         byte[] currencyBytes = new byte[20];

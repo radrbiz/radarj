@@ -106,7 +106,7 @@ public class TestTxn {
 
         long fee = 1000;
         if (amount != null) {
-            if (amount.currencyString().equals("VRP") || amount.currencyString().equals("XRP") || amount.currencyString().equals("VBC")) {
+            if (amount.currencyString().equals("VRP") || amount.currencyString().equals("VBC")) {
                 fee = (long) (amount.multiply(new BigDecimal("1000")).doubleValue());
             }
         }

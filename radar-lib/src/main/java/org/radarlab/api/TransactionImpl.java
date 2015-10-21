@@ -46,7 +46,7 @@ public class TransactionImpl {
         data.put("source_account", sourceAccount);
         data.put("destination_account", destinationAccount);
 
-        if (destinationAmount.currencyString().equals("XRP") || destinationAmount.currencyString().equals("VRP")) {
+        if (destinationAmount.currencyString().equals("VRP")) {
             data.put("destination_amount", String.valueOf(destinationAmount.value().multiply(new BigDecimal("1000000")).longValue()));
         } else {
             Map<String, Object> destAmount = new HashMap<>();
@@ -205,7 +205,7 @@ public class TransactionImpl {
         }
         SignedTransaction sign = new SignedTransaction(txn);
         long fee = 1000;
-        if (amount.currencyString().equals("VRP") || amount.currencyString().equals("XRP") || amount.currencyString().equals("VBC")) {
+        if (amount.currencyString().equals("VRP") || amount.currencyString().equals("VBC")) {
             fee = (long) (amount.doubleValue() * 1000);
         }
         fee = Math.max(1000, fee);
@@ -295,7 +295,7 @@ public class TransactionImpl {
 
         long fee = 1000;
         if (amount != null) {
-            if (amount.currencyString().equals("VRP") || amount.currencyString().equals("XRP") || amount.currencyString().equals("VBC")) {
+            if (amount.currencyString().equals("VRP") || amount.currencyString().equals("VBC")) {
                 fee = (long) (amount.multiply(new BigDecimal("1000")).doubleValue());
             }
         }
@@ -1100,7 +1100,7 @@ public class TransactionImpl {
     }
 
     private boolean isNative(String currency) {
-        return currency.equalsIgnoreCase("VRP") || currency.equalsIgnoreCase("XRP") || currency.equalsIgnoreCase("VBC");
+        return currency.equalsIgnoreCase("VRP") || currency.equalsIgnoreCase("VBC");
     }
 
     private Map<String, BigDecimal> getOfferValue(JSONObject jo) {

@@ -16,7 +16,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 /**
- * In radar, amounts are either XRP, the native currency, or an IOU of
+ * In radar, amounts are either VRP, the native currency, or an IOU of
  * a given currency as issued by a designated account.
  */
 public class Amount extends Number implements SerializedType, Comparable<org.radarlab.core.Amount>
@@ -39,7 +39,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     public static final MathContext MATH_CONTEXT = new MathContext(16, RoundingMode.HALF_UP);
     // The maximum amount of digits in mantissa of an IOU amount
     public static final int MAXIMUM_IOU_PRECISION = 16;
-    // The smallest quantity of an XRP is a drop, 1 millionth of an XRP
+    // The smallest quantity of an VRP is a drop, 1 millionth of an VRP
     public static final int MAXIMUM_NATIVE_SCALE = 6;
     // Defines bounds for native amounts
     public static final BigDecimal MAX_NATIVE_VALUE = parseDecimal("100,000,000,000.0");
@@ -52,11 +52,11 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
 
     public static final org.radarlab.core.Amount ONE_VRP = fromString("1.0");
 
-    // The quantity of XRP or Issue(currency/issuer pairing)
-    // When native, the value unit is XRP, not drops.
+    // The quantity of VRP or Issue(currency/issuer pairing)
+    // When native, the value unit is VRP, not drops.
     private BigDecimal value;
     private Currency currency;
-    // If the currency is XRP
+    // If the currency is VRP
     private boolean isNative;
     // Normally, in the constructor of an Amount the value is checked
     // that it's scale/precision and quantity are correctly bounded.
@@ -131,7 +131,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
         if (isNative()) {
             issuer = AccountID.VRP_ISSUER;
             if (!unbounded) {
-                checkXRPBounds(value);
+                checkVRPBounds(value);
             }
             // Offset is unused for native amounts
             offset = -6; // compared to drops.
@@ -475,7 +475,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
                     value = new BigDecimal(new BigInteger(sign, mantissa), 6);
                     return new org.radarlab.core.Amount(value, Currency.VBC, AccountID.VBC_0, false);
                 }else {
-                    value = xrpFromDropsMantissa(mantissa, sign);
+                    value = vrpFromDropsMantissa(mantissa, sign);
                     return new org.radarlab.core.Amount(value);
                 }
             }
@@ -505,7 +505,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     }
     static public Translator translate = new Translator();
 
-    public static BigDecimal xrpFromDropsMantissa(byte[] mantissa, int sign) {
+    public static BigDecimal vrpFromDropsMantissa(byte[] mantissa, int sign) {
         return new BigDecimal(new BigInteger(sign, mantissa), 6);
     }
 
@@ -543,7 +543,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
         if (val.contains("/")) {
             return fromIOUString(val);
         } else if (val.contains(".")) {
-            return fromXrpString(val);
+            return fromVrpString(val);
         } else {
             return fromDropString(val);
         }
@@ -567,7 +567,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     }
 
     @Deprecated
-    private static org.radarlab.core.Amount fromXrpString(String valueString) {
+    private static org.radarlab.core.Amount fromVrpString(String valueString) {
         BigDecimal val = new BigDecimal(valueString);
         return new org.radarlab.core.Amount(val);
     }
@@ -646,7 +646,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
         return new PrecisionError(abs.toPlainString() + " is " + sized + " than bound " + bound);
     }
 
-    public static void checkXRPBounds(BigDecimal value) {
+    public static void checkVRPBounds(BigDecimal value) {
         // This is for that damn offer at index: 6310D78E6AD408892743DD62455694162E758DA283D0E4A2CB3A3C173B7C794A
         if (value.compareTo(TAKER_PAYS_FOR_THAT_DAMN_OFFER) == 0) {
             return;

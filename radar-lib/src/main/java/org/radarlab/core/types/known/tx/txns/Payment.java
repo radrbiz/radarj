@@ -56,7 +56,7 @@ public class Payment extends Transaction {
             if (address.equals(destination().address) && address.equals(account().address)) {
                 item.setType("exchange");
                 item.setSendMax(new AmountObj(sendMax().valueText(),
-                        sendMax().currencyString().equals("XRP") ? "VRP" : sendMax().currencyString(), sendMax().issuerString()));
+                        sendMax().currencyString(), sendMax().issuerString()));
             } else
                 item.setType(destination().address.equals(address) ? "received" : "sent");
         }
