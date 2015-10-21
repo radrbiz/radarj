@@ -365,8 +365,8 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     }
     /**
      * @return Amount
-     * The real native unit is a drop, one million of which are an XRP.
-     * We want `one` unit at XRP scale (1e6 drops), or if it's an IOU,
+     * The real native unit is a drop, one million of which are an VRP.
+     * We want `one` unit at VRP scale (1e6 drops), or if it's an IOU,
      * just `one`.
      */
     public org.radarlab.core.Amount one() {
@@ -624,7 +624,7 @@ public class Amount extends Number implements SerializedType, Comparable<org.rad
     }
 
     /**
-     * @return A String containing the value as a decimal number (in XRP scale)
+     * @return A String containing the value as a decimal number (in VRP scale)
      */
     public String valueText() {
         return value.signum() == 0 ? "0" : value().toPlainString();
