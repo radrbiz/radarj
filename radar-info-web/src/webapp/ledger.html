@@ -127,7 +127,7 @@
                     html += "</td><td>" + tx.Fee + "</td>";
                     if (tx.TransactionType == "Payment") {
                         if (typeof tx.Amount.currency == 'undefined') {
-                            html += "</td><td>XRP</td><td>" + tx.Amount + "</td>"
+                            html += "</td><td>VRP</td><td>" + tx.Amount + "</td>"
                         } else
                             html += "</td><td>" + tx.Amount.currency + "</td><td>" + tx.Amount.value + "</td>"
                     } else if (tx.TransactionType == "OfferCreate") {
@@ -136,14 +136,14 @@
                         var gcur;
                         var gamount;
                         if (typeof tx.TakerPays.currency == 'undefined') {
-                            pcur = "XRP";
+                            pcur = "VRP";
                             pamount = tx.TakerPays;
                         } else {
                             pcur = tx.TakerPays.currency;
                             pamount = tx.TakerPays.value;
                         }
                         if (typeof tx.TakerGets.currency == 'undefined') {
-                            gcur = "XRP";
+                            gcur = "VRP";
                             gamount = tx.TakerGets;
                         } else {
                             gcur = tx.TakerGets.currency;
