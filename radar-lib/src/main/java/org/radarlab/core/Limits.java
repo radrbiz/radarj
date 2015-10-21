@@ -1,7 +1,7 @@
 package org.radarlab.core;
 
 
-import com.radar.core.fields.Field;
+import org.radarlab.core.fields.Field;
 
 public class Limits extends STArray{
     public void add(Entry val){
