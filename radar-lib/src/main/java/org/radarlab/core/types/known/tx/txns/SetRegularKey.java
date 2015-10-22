@@ -8,7 +8,7 @@ import org.radarlab.core.serialized.enums.TransactionType;
 import org.radarlab.core.types.known.tx.Transaction;
 
 /**
- * Created by wenfeng on 15/8/17.
+ * Created by AC on 15/8/17.
  */
 public class SetRegularKey extends Transaction {
     public SetRegularKey() {

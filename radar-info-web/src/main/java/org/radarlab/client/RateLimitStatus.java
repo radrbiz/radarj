@@ -6,8 +6,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * rate limit status object
- * @author wenfengsun
- * @since 2010-3-17下午01:39:52
+ * @author AC
+ * @since 2015-02-10
  */
 public class RateLimitStatus extends ReentrantLock implements Serializable{
 
