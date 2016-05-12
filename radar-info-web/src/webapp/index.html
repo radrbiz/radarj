@@ -2,22 +2,17 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="shortcut icon" href="//cnwiki.radarlab.org/lib/tpl/dokuwiki/images/favicon.ico" />
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-    <link href="./static/s.css" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link href="WEB-INF/static/s.css" type="text/css" rel="stylesheet"/>
     <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
-    <script src="./static/c.js" type="text/javascript"></script>
+    <script src="WEB-INF/static/CommonPerson.js" type="text/javascript"></script>
+    <script src="WEB-INF/static/c.js" type="text/javascript"></script>
     <title>$platform Client Page</title>
     <script lang="javascript">
         $(function () {
-            $("#meta").dialog({
-                autoOpen: false,
-                width: 800,
-                height: 600,
-                position: { my: "top", at: "top", of: window }
-            });
             $sendReq
         });
 
@@ -66,17 +61,6 @@
                 $("<h3>" + title + "</h3>").insertBefore("#" + elementId);
                 Process(JSON.stringify(data), elementId);
                 $("<a href=\"javascript:void(0);\" onclick=\"ExpandAllClicked('" + elementId + "')\">ExpandAll</a>").insertBefore("#" + elementId);
-                if (data.result && (data.result.transactions || (data.result.ledger && data.result.ledger.transactions) || data.result.TransactionType)) {
-                    console.log([].concat(data.result))
-                    if(data.result.ledger){
-                        var txHtml = parserTx(data.result.ledger.transactions )
-                    }else
-                        txHtml = parserTx(data.result.transactions || [].concat(data.result));
-                    var txDiv = document.createElement("div");
-                    txDiv.innerHTML = txHtml;
-                    document.getElementById(parentElid).appendChild(txDiv);
-                    $("<a href=\"javascript:void(0);\" onclick=\"$('#txTable').show()\" style='margin-left: 10px'>ShowInTable</a>").insertBefore("#" + elementId);
-                }
                 CollapseAllClicked(elementId);
             });
         }
@@ -146,91 +130,6 @@
                 }
             }
         }
-
-        function parserTx(txs){
-            var html = "<table id='txTable' class='bordered' style='display:none;font-size: 12px'>"
-            html += "<tr><th>Type</th><th>Sender</th><th>Recipient</th><th>Fee</th><th>Currency</th><th>Amount</th><th>Paths</th><th>meta</th><th>Hash</th></tr>"
-            for (var index in txs) {
-                var txBase = txs[index];
-                var tx = txBase.tx?txBase.tx:txBase;
-                html += "<tr><td>" + tx.TransactionType
-                        + "</td><td>" + tx.Account;
-                if (typeof tx.Destination != 'undefined')
-                    html += "</td><td>" + tx.Destination;
-                else
-                    html += "</td><td>NA";
-                html += "</td><td>" + fmoney(tx.Fee/1000000, 6) + " VRP</td>";
-                if (tx.TransactionType == "Payment") {
-                    if (!tx.Amount.currency || tx.Amount.currency == 'VBC') {
-                        html += "</td><td>"+(!tx.Amount.currency?"VRP":"VBC")+"</td><td>" + fmoney(tx.Amount.value/1000000, 6) + "</td>"
-                    } else
-                        html += "</td><td>" + tx.Amount.currency + "</td><td>" + tx.Amount.value + "</td>"
-                } else if (tx.TransactionType == "OfferCreate") {
-                    var pcur;
-                    var pamount;
-                    var gcur;
-                    var gamount;
-                    if (typeof tx.TakerPays.currency == 'undefined') {
-                        pcur = "VRP";
-                        pamount = tx.TakerPays.value;
-                    } else {
-                        pcur = tx.TakerPays.currency;
-                        pamount = tx.TakerPays.value;
-                    }
-                    if (typeof tx.TakerGets.currency == 'undefined') {
-                        gcur = "VRP";
-                        gamount = tx.TakerGets.value;
-                    } else {
-                        gcur = tx.TakerGets.currency;
-                        gamount = tx.TakerGets.value;
-                    }
-                    html += "</td><td>" + pcur + "-" + gcur + "</td><td>" + ((pcur=='VRP'||pcur=='VBC')?fmoney(pamount/1000000, 6):pamount)
-                            + "-" + ((gcur=='VRP'||gcur=='VBC')?fmoney(gamount/1000000, 6):gamount) + "</td>"
-                } else if (tx.TransactionType == 'Dividend') {
-                    html += "</td><td>VBC</td><td>" + fmoney(parseInt(tx.DividendCoinsVBC, 16) / 1000000,6) + "</td>"
-                } else {
-                    html += "</td><td>NA</td><td>NA</td>"
-                }
-                if (typeof tx.Paths != 'undefined') {
-                    var json = JSON.stringify(tx.Paths);
-                    html += "</td><td><div style='display:none' id='path" + tx.hash + "'>" + json + "</div>" +
-                            "<input type='button' value='viewPaths' onclick=\"showPath('" + tx.hash + "')\"/></td>";
-                } else {
-                    html += "</td><td>--</td>";
-                }
-                if ( txBase.metaData || txBase.meta) {
-                    json = JSON.stringify(txBase.metaData || txBase.meta);
-                    html += "</td><td><div style='display:none' id='meta" + tx.hash + "'>" + json + "</div>" +
-                            "<input type='button' value='viewMeta' onclick=\"viewMeta('" + tx.hash + "')\"/></td>";
-                } else {
-                    html += "</td><td>--</td>";
-                }
-                html += "<td>" + tx.hash + "</td></tr>";
-            }
-            html += "</table>";
-            return html;
-        }
-        function viewMeta(hash) {
-            Process($("#meta" + hash).html(), "meta");
-            ExpandAllClicked("meta");
-            $("#meta").dialog("open");
-        }
-        function fmoney(s, n) {
-            var minus = s < 0;
-            if (minus)
-                s = -s;
-            n = n > 0 && n <= 20 ? n : 2;
-            s = parseFloat((s + "").replace(/[^\d\.-]/g, "")).toFixed(n) + "";
-            var l = s.split(".")[0].split("").reverse(), r = s.split(".")[1];
-            var t = "";
-            for (var i = 0; i < l.length; i++) {
-                t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
-            }
-            if (minus)
-                return "-" + t.split("").reverse().join("") + "." + r;
-            else
-                return t.split("").reverse().join("") + "." + r;
-        }
     </script>
 </head>
 <body>
@@ -271,8 +170,11 @@
         <div id="account"></div>
         <div id="ledger"></div>
         <div id="tx"></div>
-        <div id="meta" title="Transaction MetaData"></div>
     </div>
 </div>
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-59572162-1', 'auto'); ga('send', 'pageview');
+</script>
 </body>
 </html>

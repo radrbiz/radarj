@@ -1,0 +1,78 @@
+<html ng-app="clientApp">
+<title>Info Search</title>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<link rel="shortcut icon" href="http://www.radarlab.org/favicon.ico"/>
+<link href="./js/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="./css/layout.css" rel="stylesheet">
+<link href="./fonts/stylesheet.css" rel="stylesheet">
+<script src="./js/jquery/2.1.1/jquery.min.js"></script>
+<script src="./js/angularjs/1.2.9/angular.min.js"></script>
+<script src="./js/angularjs/1.2.9/angular-route.min.js"></script>
+<script src="./js/jsonformatter/json-formatter.min.js"></script>
+<script src="./js/angularjs/1.2.9/angular-cookies.min.js"></script>
+<script src="./js/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="./js/underscorejs/1.6.0/underscore-min.js"></script>
+<script src="./js/angular.strap/2.1.5/angular-strap.min.js"></script>
+<script src="./js/angular.strap/2.1.5/angular-strap.tpl.min.js"></script>
+<script src="./js/angular.local.storage/angular-local-storage.min.js"></script>
+<script src="./js/ng-clip/ng-clip.min.0.2.6.js"></script>
+<script src="./js/ng-sortable/ng-sortable.js"></script>
+<script src="./js/ng-clip/ZeroClipboard.min.js"></script>
+<script src="./js/sorted-set/sorted-set.min.js"></script>
+<script src="./v1/app.js"></script>
+<script src="./v1/search.js"></script>
+<body>
+<header role="header" class="header header1 fixed-top scrolled">
+    <div class="container"><a href="#/" class="logo"></a>
+        <nav id="nav" class="navbar collapse navbar-collapse">
+            <ul class="nav">
+                <li class="menu-home" ng-class="{active:(path=='/')||(path.indexOf('/search/')!=-1)}"><a href="#/">RPC Tool</a>
+                </li>
+                <li class="menu-integrate" ng-class="{active:path=='/ledger'}"><a href="#/ledger">Ledger List</a>
+                </li>
+                <li class="menu-build" ng-class="{active:path=='/server'}"><a href="#/server">Server</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<div class="" ng-view="" style="min-height: 800px"></div>
+<footer class="footer">
+    <div class="container">
+        <div style="text-align:left" class="col-xs-12 col-sm-3">
+            <span>Version: 0.6.1</span>
+        </div>
+        <div class="col-xs-12 col-sm-9 right-links">
+            <p class="t1">
+                <a href="http://www.radarlab.org/" target="_blank">Home</a>
+                <a href="https://wiki.radarlab.org/" target="_blank">Wiki</a>
+                <a href="https://charts.radarlab.org/" target="_blank">Charts</a>
+                <a href="https://radarlab.org/dev/" target="_blank">Development</a>
+                <a href="http://www.radarlab.org/news/" target="_blank">News</a>
+                <a href="http://www.radarlab.org/en/download.shtml" target="_blank">Apps</a>
+            </p>
+            <p class="t2">
+                <a href="//wiki.radarlab.org/doku.php?id=trade_help" target="_blank">Help</a>
+                <a href="https://wiki.radarlab.org/law" target="_blank">AML Policy</a>
+                <a href="mailto:radar@radarlab.org">Email Feedback</a>
+            </p>
+        </div>
+        <p class="cr"><a href="//radarlab.org/" target="_blank">Radarlab.org ©2016</a></p>
+    </div>
+</footer>
+<script>
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function () {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+        a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+    ga('create', 'UA-59572162-1', 'auto');
+    ga('send', 'pageview');
+</script>
+</body>
+</html>

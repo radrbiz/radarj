@@ -2,28 +2,32 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="shortcut icon" href="//cnwiki.radarlab.org/lib/tpl/dokuwiki/images/favicon.ico" />
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="WEB-INF/static/jquery-ui.css"/>
     <!--<link href="./static/s.css" type="text/css" rel="stylesheet"/>-->
-    <script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
     <script src="WEB-INF/static/c.js" type="text/javascript"></script>
-    <script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
     <title>$platform Client Page</title>
     <style>
-        table{
+        table {
             font-size: 14px;
-            word-break:break-all;
+            word-break: break-all;
         }
-        th{
+
+        th {
             font-size: 14px;
         }
     </style>
     <script lang="javascript">
         $(function () {
             var time = 5000;
+
             function run() {
                 setInterval(serverState, time);
             }
+
             serverState();
             run();
         });
@@ -31,40 +35,22 @@
             $.ajax({
                 type: "POST",
                 url: "./",
-                data: "type=serverState"
+                data: "type=overview"
             }).done(function (data) {
                 if (typeof data.error != 'undefined') {
                     alert(data.error);
                     return;
                 }
-                var state = data.result.state;
+                var state = data;
                 var html = "<table class='table table-hover table-condensed'>"
                 html += "<tr><th>Title</th><th>Value</th></tr>";
-                html += "<tr><td>rpc_address</td><td>" + state.address + "</td></tr>";
-                html += "<tr><td>build_version</td><td>" + state.build_version + "</td></tr>";
-                html += "<tr><td>complete_ledgers</td><td>" + state.complete_ledgers + "</td></tr>";
-                html += "<tr><td>io_latency_ms</td><td>" + state.io_latency_ms + "</td></tr>";
-                html += "<tr><td>peers</td><td>" + state.peers + "</td></tr>";
-                html += "<tr><td>server_state</td><td>" + state.server_state + "</td></tr>";
-                if(state.validated_ledger){
-                    html += "<tr><td>validated_ledger</td><td><a target='_blank' href='./ledger/" + state.validated_ledger.seq + "'>" + state.validated_ledger.seq + "</a></td></tr>";
-                }else{
-                    html += "<tr><td>validated_ledger</td><td><a target='_blank' href='./ledger/" + state.closed_ledger.seq + "'>" + state.closed_ledger.seq + "</a></td></tr>";
-                }
-                html += "<tr><td>load_base</td><td>" + state.load_base + "</td></tr>";
-                html += "<tr><td>pubkey_node</td><td>" + state.pubkey_node + "</td></tr>";
-                html += "<tr><td>validation_quorum</td><td>" + state.validation_quorum + "</td></tr>";
+                html += "<tr><td>ledger_index</td><td>" + state.ledger_index + "</td></tr>";
+                html += "<tr><td>totalCoins</td><td>" + state.totalCoins + "</td></tr>";
+                html += "<tr><td>totalCoinsVBC</td><td>" + state.totalCoinsVBC + "</td></tr>";
+                html += "<tr><td>account_count</td><td>" + state.account_count + "</td></tr>";
+                html += "<tr><td>tx_count</td><td>" + state.tx_count + "</td></tr>";
+                html += "<tr><td>ledger_time</td><td>" + state.ledger_time + "</td></tr>";
                 html += "</table>"
-                if(typeof data.result.peers != 'undefined'){
-                    html += "<div class='well'>" +
-                            "<p>Connected Peers</p>" +
-                            "<table class='table table-hover table-bordered table-condensed' style='font-size: 12px'>"
-                    html += "<tr><th>#</th><th>address</th><th>build_version</th><th>complete_ledgers</th><th>pub_key</th></tr>"
-                    $.each(data.result.peers, function(index, value){
-                        html += "<tr><td>"+(index+1)+"</td><td>"+value.address+"</td><td>"+value.version+"</td><td>"+value.complete_ledgers+"</td><td>"+value.public_key+"</td></tr>"
-                    });
-                    html += "</table></div>"
-                }
                 $("#server_info").html(html)
             });
         }
@@ -87,7 +73,8 @@
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -101,15 +88,34 @@
             <ul class="nav navbar-nav">
                 <li><a href="./index.html">Search</a></li>
                 <li><a href="./ledger_list.html">Ledger List</a></li>
-                <li class="active"><a href="./server.html">Server Info</a></li>
+                <li><a href="./server.html">Server Info</a></li>
+                <li class="active"><a href="./overview.html">Overview</a></li>
             </ul>
-        </div><!-- /.navbar-collapse -->
-    </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
 </nav>
 <div class="container">
     <div class="jumbotron">
-        <h3>Server Info</h3>
+        <h3>State Overview</h3>
+
         <div id="server_info"></div>
+        <div class="well">
+            <p>Utils</p>
+            <table class='table table-hover table-bordered table-condensed' style='font-size: 12px'>
+                <tr><td><a href="http://ksc-8:8080/radar-client/" target="_blank">Radar Trade(Java Version, Online network)</a></td></tr>
+                <tr><td><a href="http://ksc-11:8080/radar-client/" target="_blank">Radar Trade(Java Version, Test network)</a></td></tr>
+                <tr><td><a href="http://ksc-1/" target="_blank">Radar Trade(Node Version, Test network)</a></td></tr>
+                <tr><td><a href="http://ksc-7:3000/" target="_blank">RadarCharts Overview (Test network)</a></td></tr>
+                <tr><td><a href="http://ksc-7:3003/" target="_blank">RadarCharts Overview (Online network)</a></td></tr>
+                <tr><td><a href="http://ksc-4:8080/index.html" target="_blank">RadarInfo (Test network)</a></td></tr>
+                <tr><td><a href="http://amz-0:8080/index.html" target="_blank">RadarInfo (Online network)</a></td></tr>
+                <tr><td><a href="http://ali-0:8080/index.html" target="_blank">RippleInfo (Ripple Online network)</a></td></tr>
+                <tr><td><a href="http://ksc-1:8085/" target="_blank">Radar Gateway (Radar Test network & 99coin)</a></td></tr>
+                <tr><td><a href="http://ksc-1:5000/" target="_blank">Radar Gateway Admin (Radar Test network & 99coin)</a></td></tr>
+            </table>
+        </div>
     </div>
 </div>
 <script>

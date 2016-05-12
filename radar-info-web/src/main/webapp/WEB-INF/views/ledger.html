@@ -1,0 +1,182 @@
+<div class="features" ng-controller="ledgerDetail">
+    <div class="feature feature1">
+        <div class="container contentm">
+            <div class="form-horizontal">
+                <h4>Ledger/{{i}}</h4>
+            </div>
+            <div ng-show="error">
+                <div error-page></div>
+            </div>
+            <div ng-show="loading">
+                <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                <span>Loading...</span>
+            </div>
+            <div ng-show="!loading && ledger_info">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Summary</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-2 rborder">
+                                <div class="row">
+                                    <div class="text-left col-md-5 fa-silver">Index</div>
+                                    <div class="text-right col-md-7" ng-bind="i"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-md-6 fa-silver">Tx count</div>
+                                    <div class="text-right col-md-6"
+                                         ng-bind="ledger_info.result.ledger.transactions.length"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-md-4 fa-silver">Resolution</div>
+                                    <div class="text-right col-md-8"
+                                         ng-bind="ledger_info.result.ledger.close_time_resolution"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-md-4 fa-silver">Flags</div>
+                                    <div class="text-right col-md-8"
+                                         ng-bind="ledger_info.result.ledger.close_flags"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 rborder">
+                                <div class="row">
+                                    <div class="text-left col-md-6 fa-silver">Total VBC</div>
+                                    <div class="text-right col-md-6"
+                                         ng-bind="ledger_info.result.ledger.totalCoinsVBC/1000000"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-md-6 fa-silver">Total VRP</div>
+                                    <div class="text-right col-md-6"
+                                         ng-bind="ledger_info.result.ledger.totalCoins/1000000"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-md-4 fa-silver">Time</div>
+                                    <div class="text-right col-md-8"
+                                         ng-bind="ledger_info.result.ledger.close_time_human"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-md-6 fa-silver">Parent Time</div>
+                                    <div class="text-right col-md-6"
+                                         ng-bind="ledger_info.result.ledger.parent_close_time"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="row">
+                                    <div class="text-left col-md-3 fa-silver">Hash</div>
+                                    <div class="text-right col-md-9 fa-10px"
+                                         ng-bind="ledger_info.result.ledger.hash"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-md-3 fa-silver">Account Hash</div>
+                                    <div class="text-right col-md-9 fa-10px"
+                                         ng-bind="ledger_info.result.ledger.account_hash"></div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="text-left col-md-3 fa-silver">Parent Hash</div>
+                                    <div class="text-right col-md-9 fa-10px"
+                                         ng-bind="ledger_info.result.ledger.parent_hash"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-md-3 fa-silver">Transaction Hash</div>
+                                    <div class="text-right col-md-9 fa-10px"
+                                         ng-bind="ledger_info.result.ledger.transaction_hash"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Transactions</div>
+                    <div class="panel-body">
+                        <div ng-repeat="tx in ledger_info.result.ledger.transactions">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <a href="#/search/{{tx.hash}}" ng-bind="tx.hash"></a>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="col-md-6 rborder">
+                                        <div class="row">
+                                            <div class="text-left col-md-5 fa-silver">Transaction Type</div>
+                                            <div class="text-right col-md-7">
+                                                <span class="fa-10px label" ng-class="txType[tx.TransactionType]"
+                                                      ng-bind="tx.TransactionType"></span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="text-left col-md-2 fa-silver">Account</div>
+                                            <div class="text-right col-md-10">
+                                                <a href="#/search/{{tx.Account}}" ng-bind="tx.Account"></a>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="text-left col-md-5 fa-silver">Destination</div>
+                                            <div class="text-right col-md-7">
+                                                <span ng-if="tx.Destination">
+                                                    <a href="#/search/{{tx.Destination}}" ng-bind="tx.Destination"></a>
+                                                </span>
+                                                <span ng-if="tx.Reference">
+                                                    <a href="#/search/{{tx.Reference}}" ng-bind="tx.Reference"></a>
+                                                </span>
+                                                <span ng-if="!tx.Destination&&!tx.Reference">
+                                                    NA
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="text-left col-md-4 fa-silver">Fee</div>
+                                            <div class="text-right col-md-8">
+                                                <span ng-bind="tx.Fee/1000000"></span>
+                                                <span>VRP</span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="text-left col-md-4 fa-silver">Amount</div>
+                                            <div class="text-right col-md-8" ng-if="tx.Amount">
+                                                <currency-pair amount="tx.Amount"></currency-pair>
+                                            </div>
+                                            <div class="text-right col-md-8" ng-if="!tx.Amount">
+                                                NA
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="row">
+                                            <div class="text-left col-md-4 fa-silver">Transaction Result</div>
+                                            <div class="text-right col-md-8">
+                                                <span ng-if="tx.metaData" ng-bind="tx.metaData.TransactionResult"></span>
+                                                <span ng-if="!tx.metaData">NA</span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="text-left col-md-2 fa-silver">Sequence</div>
+                                            <div class="text-right col-md-10" ng-bind="tx.Sequence"></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="text-left col-md-4 fa-silver">Flags</div>
+                                            <div class="text-right col-md-8" ng-bind="tx.Flags">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="text-left col-md-4 fa-silver">LastLedger Sequence</div>
+                                            <div class="text-right col-md-8" ng-if="tx.LastLedgerSequence" ng-bind="tx.LastLedgerSequence"></div>
+                                            <div class="text-right col-md-8" ng-if="!tx.LastLedgerSequence">NA</div>
+                                        </div>
+                                        <div class="row" ng-if="tx.TakerGets">
+                                            <div class="text-left col-md-4 fa-silver">Buy/Sell</div>
+                                            <div class="text-right row col-md-8" style="padding-right: 0px;">
+                                                <currency-pair amount="tx.TakerGets"></currency-pair>
+                                                <div style="float:right">/</div>
+                                                <currency-pair amount="tx.TakerPays"></currency-pair>
+                                            </div>
+                                            <div class="text-right col-md-8" ng-if="!tx.TakerGets">NA</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

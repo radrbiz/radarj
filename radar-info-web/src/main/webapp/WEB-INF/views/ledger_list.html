@@ -1,0 +1,37 @@
+<div class="features" ng-controller="ledger">
+    <div class="feature feature1">
+        <div class="container contentm">
+            <div class="form-horizontal">
+                <h2>Recent Ledgers</h2>
+            </div>
+            <div class="container">
+                <div ng-show="loading">
+                    <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                    <span>Loading...</span>
+                </div>
+                <div ng-show="!loading && ledgers">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Ledger Index</th>
+                            <th>TX Count</th>
+                            <th>Total VBC</th>
+                            <th>Total VRP</th>
+                            <th>Ledger Hash</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="ledger in ledgers">
+                            <td><a href="#/ledger/{{ledger.result.ledger.ledger_index}}" ng-bind="ledger.result.ledger.ledger_index"></a> </td>
+                            <td ng-bind="ledger.result.ledger.transactions.length"></td>
+                            <td ng-bind="ledger.result.ledger.totalCoinsVBC/1000000"></td>
+                            <td ng-bind="ledger.result.ledger.totalCoins/100000"></td>
+                            <td ng-bind="ledger.result.ledger.ledger_hash"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

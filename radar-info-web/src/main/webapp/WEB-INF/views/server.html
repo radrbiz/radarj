@@ -1,0 +1,61 @@
+<div class="features" ng-controller="server">
+    <div class="feature feature1">
+        <div class="container contentm">
+            <div class="form-horizontal">
+                <h2>Server Info</h2>
+            </div>
+            <div class="container">
+                <div ng-show="error">
+                    <div error-page></div>
+                </div>
+                <div ng-show="loading">
+                    <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                    <span>Loading...</span>
+                </div>
+                <div ng-show="!loading && server_info">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="info in server_info">
+                            <td ng-bind="info.name"></td>
+                            <td ng-bind="info.value"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="container" ng-show="peers">
+                        <h3>Peers</h3>
+                        <div>
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Address</th>
+                                    <th>Complete Ledgers</th>
+                                    <th>Version</th>
+                                    <th>Uptime</th>
+                                    <th>Load</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="peer in peers">
+                                    <td ng-bind="$index+1"></td>
+                                    <td ng-bind="peer.address"></td>
+                                    <td ng-bind="peer.complete_ledgers"></td>
+                                    <td ng-bind="peer.version"></td>
+                                    <td ng-bind="peer.uptime"></td>
+                                    <td ng-bind="peer.load"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,81 @@
+<div class="features" ng-controller="search">
+    <div class="feature feature1">
+        <div class="container contentm">
+            <div class="form-horizontal">
+                <h2>RPC Tool</h2>
+                <form id="searchForm" ng-submit="search()">
+                    <input required type="text" id="address" class="form-control" ng-model="address"
+                           placeholder="RADR Address or TransactionHash or Ledger index">
+
+                    <p><i style="font-size: 13px; color: darkgrey">Try: rNp2b7JoPWoNYPGHxQWjwx4AzVsQJKpkSN</i><br/>
+                        <input type="checkbox" ng-model="full"/>&nbsp;<i style="font-size: 13px; color: darkgrey">if you want to see full ledger info, select this checkbox </i></p>
+                    <input ng-disabled="searchForm.$invalid" type="submit" class="btn btn-primary" value="Submit"/>
+                </form>
+            </div>
+            <div ng-show="is_address">
+                <div><h3>Account Info</h3>
+                    <div><a href="" ng-click="expandAll('account_info')">expand all</a></div>
+                </div>
+                <div ng-show="accinc_loading" style="margin-top: 15px">
+                    <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                    <span>Loading...</span>
+                </div>
+                <div class="json-resp" ng-if="account_info&&!accinc_loading">
+                    <json-formatter json="account_info" open="open.account_info" class="json-formatter-dark"></json-formatter>
+                </div>
+                <div><h3>Account Lines</h3>
+                    <div><a href="" ng-click="expandAll('account_lines')">expand all</a></div>
+                </div>
+                <div ng-show="acclin_loading" style="margin-top: 15px">
+                    <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                    <span>Loading...</span>
+                </div>
+                <div class="json-resp" ng-if="account_lines&&!acclin_loading">
+                    <json-formatter json="account_lines" open="open.account_lines" class="json-formatter-dark"></json-formatter>
+                </div>
+                <div><h3>Account Offers</h3>
+                    <div><a href="" ng-click="expandAll('account_offers')">expand all</a></div>
+                </div>
+                <div ng-show="accoffer_loading" style="margin-top: 15px">
+                    <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                    <span>Loading...</span>
+                </div>
+                <div class="json-resp" ng-if="account_offers&&!accoffer_loading">
+                    <json-formatter json="account_offers" open="open.account_offers" class="json-formatter-dark"></json-formatter>
+                </div>
+                <div><h3>Account Transactions</h3>
+                    <div><a href="" ng-click="expandAll('account_tx')">expand all</a></div>
+                </div>
+                <div ng-show="acctx_loading" style="margin-top: 15px">
+                    <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                    <span>Loading...</span>
+                </div>
+                <div class="json-resp" ng-if="account_tx&&!acctx_loading">
+                    <json-formatter json="account_tx" open="open.account_tx" class="json-formatter-dark"></json-formatter>
+                </div>
+            </div>
+            <div ng-show="is_ledger">
+                <div><h3>Ledger Info</h3>
+                    <div><a href="" ng-click="expandAll('ledger')">expand all</a></div></div>
+                <div ng-show="accinc_loading" style="margin-top: 15px">
+                    <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                    <span>Loading...</span>
+                </div>
+                <div class="json-resp" ng-if="account_info&&!accinc_loading">
+                    <json-formatter json="account_info" open="open.ledger" class="json-formatter-dark"></json-formatter>
+                </div>
+            </div>
+            <div ng-show="is_tx">
+                <div><h3>Transaction Info</h3>
+                    <div><a href="" ng-click="expandAll('tx')">expand all</a></div></div>
+                <div ng-show="accinc_loading" style="margin-top: 15px">
+                    <i class="fa fa-spinner fa-spin" style="font-size:20px;color:lightslategray"></i>
+                    <span>Loading...</span>
+                </div>
+                <div class="json-resp" ng-if="account_info&&!accinc_loading">
+                    <json-formatter json="account_info" open="open.tx" class="json-formatter-dark"></json-formatter>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
