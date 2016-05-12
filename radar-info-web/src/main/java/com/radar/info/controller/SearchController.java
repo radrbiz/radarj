@@ -57,7 +57,6 @@ public class SearchController extends AbstractController {
             params.put("method", "ledger");
             params.put("params", Collections.singletonList(para));
             resp = HttpClient.post(HTTP_URI, new Gson().toJson(params)).getResponseString();
-//            return Utils.ledger(Integer.valueOf(address), false, StringUtils.isNoneEmpty(full), true, false, true);
         }else if(address.length() > 50){
             Map<String, Object> params = new HashMap<>();
             Map<String, Object> para = new HashMap<>();
