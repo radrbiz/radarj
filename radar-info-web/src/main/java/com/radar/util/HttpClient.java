@@ -77,7 +77,7 @@ public class HttpClient {
         try {
             URL requestURL = new URL(url);
             conn = (HttpURLConnection) requestURL.openConnection();
-            conn.setRequestProperty("User-Agent", "99coin-Agent");
+            conn.setRequestProperty("User-Agent", "radar-Agent");
             conn.setRequestProperty("Accept-Encoding", "gzip");
             conn.setConnectTimeout(6 * 1000);
             conn.setReadTimeout(6 * 1000);
@@ -130,7 +130,7 @@ public class HttpClient {
 
         HttpResponse response=httpClient.execute(httppost);
         String result = null;
-        if(response.getStatusLine().getStatusCode()==200) {//如果状态码为200,就是正常返回
+        if(response.getStatusLine().getStatusCode()==200) {
             result = EntityUtils.toString(response.getEntity());
             logger.info("post to:"+url + ", res="+result);
         }else {
