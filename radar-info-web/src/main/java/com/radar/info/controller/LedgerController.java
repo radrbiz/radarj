@@ -15,9 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * Created by AC on 16/5/10.
- */
 @Controller
 @RequestMapping(value = "/ledger", produces = "application/json;charset=UTF-8")
 public class LedgerController extends AbstractController {

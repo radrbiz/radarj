@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by AC on 16/5/10.
- */
 @Controller
 @RequestMapping(value = "/server", produces = "application/json;charset=UTF-8")
 public class ServerInfoController extends AbstractController{

@@ -26,10 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-/**
- * Created by Andy
- * since 14-9-26.
- */
 public class HttpClient {
 
     private static final Logger logger = Logger.getLogger(HttpClient.class.getName());

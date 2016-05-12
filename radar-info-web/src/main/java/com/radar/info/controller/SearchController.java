@@ -13,9 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by AC on 16/5/6.
- */
 @Controller
 @RequestMapping(value = "/search", produces = "application/json;charset=UTF-8")
 public class SearchController extends AbstractController {

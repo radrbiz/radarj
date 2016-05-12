@@ -12,10 +12,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Andy
- * since 14/12/19.
- */
 public class AbstractController {
     protected static final String HTTP_URI = Config.getInstance().getProperty("http.server.backend");
     private static final Logger logger = Logger.getLogger(AbstractController.class);

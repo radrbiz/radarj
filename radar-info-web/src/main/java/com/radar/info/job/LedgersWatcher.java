@@ -14,11 +14,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by AC on 16/3/7.
- * ttps://t.radarlab.org/api/tx/book_offers?currency1=VBC&issuer1=rrrrrrrrrrrrrrrrrrrrVFngv46
- * &currency2=CNY&issuer2=rLUti5o23WCkJ4YYqSDU5qywLdUHnFwDw6&limit=20&ts=1457344234099
- */
 public class LedgersWatcher implements InitializingBean{
     public static final ConcurrentMap<Integer, String> ledgers = new ConcurrentHashMap<>();
     private static final Logger logger = Logger.getLogger(LedgersWatcher.class);
